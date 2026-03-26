@@ -7,7 +7,7 @@
 ---
 
 ## 🚀 The Philosophy: Continuous Learning (RLHF)
-In customs security, training an AI model once is not enough. Criminals adapt, and new concealment methods emerge every day. CargoScan AI uses **Reinforcement Learning from Human Feedback (RLHF)** to bridge the gap between pre-training and reality. 
+In customs security, training an AI model once is not enough. Criminals adapt, and new concealment methods emerge every day. **CargoScan AI is first trained on the massive CargoX-Ray dataset** to establish a high-accuracy baseline. However, we go further by adding a layer of **Reinforcement Learning from Human Feedback (RLHF)** to bridge the gap between pre-training and real-world reality. 
 
 When an officer identifies a missed threat, they can manually draw and label it—instantly feeding expert knowledge back into the system’s learning pipeline.
 
