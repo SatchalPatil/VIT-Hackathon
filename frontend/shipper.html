@@ -3,40 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Plain Cream White Background */
+        body {
+            background-color: #FAF9F6;
+        }
+    </style>
     <title>CargoScan AI - Shipper Profiles</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen">
+<body class="bg-transparent text-slate-900 min-h-screen">
     <div class="flex">
         <!-- Sidebar -->
-        <aside class="w-56 bg-gray-900 min-h-screen p-4 flex flex-col fixed">
+        <aside class="w-56 bg-white shadow-sm border border-slate-200/60 min-h-screen p-4 flex flex-col fixed">
             <div class="mb-8">
-                <h1 class="text-xl font-bold text-white">CargoScan AI</h1>
-                <p class="text-xs text-gray-500 mt-1">Customs X-Ray Analysis</p>
+                <h1 class="text-xl font-bold text-slate-800">CargoScan AI</h1>
+                <p class="text-xs text-slate-500 mt-1">Customs X-Ray Analysis</p>
             </div>
             <nav class="flex-1 space-y-1">
-                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">📡</span> Scan
                 </a>
-                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">🔄</span> Compare
                 </a>
-                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">📋</span> Audit Trail
                 </a>
-                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg bg-gray-800 text-white">
+                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-800">
                     <span class="mr-3">🚢</span> Shippers
                 </a>
-                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">📊</span> Feedback
                 </a>
-                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">📄</span> Reports
                 </a>
             </nav>
-            <div class="pt-4 border-t border-gray-800">
-                <p class="text-xs text-gray-600 text-center">Powered by Gemini 2.5 Flash</p>
-                <p class="text-xs text-gray-600 text-center mt-1">For official use only</p>
+            <div class="pt-4 border-t border-slate-200">
+                <p class="text-xs text-slate-400 text-center">Powered by Gemini 2.5 Flash</p>
+                <p class="text-xs text-slate-400 text-center mt-1">For official use only</p>
             </div>
         </aside>
 
@@ -46,16 +52,16 @@
 
             <!-- Filters -->
             <div class="flex items-center gap-4 mb-6">
-                <input type="text" id="searchInput" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500" placeholder="Search shippers...">
-                <select id="sortSelect" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                <input type="text" id="searchInput" class="bg-slate-50 border border-slate-200 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 placeholdtext-slate-700" placeholder="Search shippers...">
+                <select id="sortSelect" class="bg-slate-50 border border-slate-200 border border-slate-300 rounded-lg px-3 py-2 text-slate-800">
                     <option value="risk">Sort by Risk Score</option>
                     <option value="scans">Sort by Scan Count</option>
                     <option value="lastSeen">Sort by Last Seen</option>
                 </select>
                 <div class="flex gap-2">
-                    <button class="filter-btn px-3 py-1 rounded-lg text-sm bg-gray-800 text-white" data-filter="all">All</button>
-                    <button class="filter-btn px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-400" data-filter="high">High Risk</button>
-                    <button class="filter-btn px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-400" data-filter="watchlist">Watchlist</button>
+                    <button class="filter-btn px-3 py-1 rounded-lg text-sm bg-slate-50 border border-slate-200 text-slate-800" data-filter="all">All</button>
+                    <button class="filter-btn px-3 py-1 rounded-lg text-sm bg-slate-100 text-slate-600" data-filter="high">High Risk</button>
+                    <button class="filter-btn px-3 py-1 rounded-lg text-sm bg-slate-100 text-slate-600" data-filter="watchlist">Watchlist</button>
                 </div>
             </div>
 
@@ -65,8 +71,8 @@
             <!-- Empty State -->
             <div id="emptyState" class="hidden text-center py-12">
                 <div class="text-4xl mb-3">🚢</div>
-                <p class="text-gray-400">No shipper profiles yet</p>
-                <p class="text-gray-600 text-sm">Profiles are created automatically when scans are processed</p>
+                <p class="text-slate-600">No shipper profiles yet</p>
+                <p class="text-slate-400 text-sm">Profiles are created automatically when scans are processed</p>
             </div>
         </main>
     </div>
@@ -119,7 +125,7 @@
                 const flagRateColor = flagRate > 50 ? '#ef4444' : flagRate > 25 ? '#f59e0b' : '#22c55e';
 
                 const card = document.createElement('div');
-                card.className = 'bg-gray-900 rounded-xl p-4';
+                card.className = 'bg-white shadow-sm border border-slate-200/60 rounded-xl p-4';
 
                 // Generate sparkline
                 const sparklinePath = Shipper.generateSparklinePath(shipper.riskHistory, 200, 32);
@@ -133,7 +139,7 @@
                     <div class="flex justify-between items-start mb-3">
                         <div>
                             <h3 class="text-lg font-semibold">${shipper.name}</h3>
-                            <p class="text-xs text-gray-500">First seen ${getDaysSince(shipper.firstSeen)} days ago · Last scan ${getRelativeTime(shipper.lastSeen)}</p>
+                            <p class="text-xs text-slate-500">First seen ${getDaysSince(shipper.firstSeen)} days ago · Last scan ${getRelativeTime(shipper.lastSeen)}</p>
                         </div>
                         <div class="text-right">
                             <div class="text-3xl font-bold" style="color: ${tier.color}">${shipper.compositeRisk}</div>
@@ -142,27 +148,27 @@
                     </div>
 
                     <div class="grid grid-cols-4 gap-2 mb-3">
-                        <div class="bg-gray-800 rounded-lg p-2 text-center">
-                            <p class="text-gray-500 text-xs">Scans</p>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
+                            <p class="text-slate-500 text-xs">Scans</p>
                             <p class="font-bold">${shipper.totalScans}</p>
                         </div>
-                        <div class="bg-gray-800 rounded-lg p-2 text-center">
-                            <p class="text-gray-500 text-xs">Flagged</p>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
+                            <p class="text-slate-500 text-xs">Flagged</p>
                             <p class="font-bold text-red-400">${shipper.flagged}</p>
                         </div>
-                        <div class="bg-gray-800 rounded-lg p-2 text-center">
-                            <p class="text-gray-500 text-xs">Cleared</p>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
+                            <p class="text-slate-500 text-xs">Cleared</p>
                             <p class="font-bold text-green-400">${shipper.cleared}</p>
                         </div>
-                        <div class="bg-gray-800 rounded-lg p-2 text-center">
-                            <p class="text-gray-500 text-xs">Flag Rate</p>
+                        <div class="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center">
+                            <p class="text-slate-500 text-xs">Flag Rate</p>
                             <p class="font-bold" style="color: ${flagRateColor}">${flagRate}%</p>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <p class="text-xs text-gray-500 mb-1">Risk Trend (Last 10 scans)</p>
-                        <svg width="100%" height="32" viewBox="0 0 200 32" class="bg-gray-800 rounded">
+                        <p class="text-xs text-slate-500 mb-1">Risk Trend (Last 10 scans)</p>
+                        <svg width="100%" height="32" viewBox="0 0 200 32" class="bg-slate-50 border border-slate-200 rounded">
                             ${sparklinePath ? `
                                 <path d="${sparklinePath}" fill="none" stroke="${tier.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 ${shipper.riskHistory.map((val, i) => {
@@ -175,10 +181,10 @@
                     </div>
 
                     <div class="flex flex-wrap gap-1 mb-3">
-                        ${(shipper.routes || []).map(r => `<span class="px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-400">${r}</span>`).join('')}
+                        ${(shipper.routes || []).map(r => `<span class="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-xs text-slate-600">${r}</span>`).join('')}
                     </div>
 
-                    <a href="audit.html?search=${encodeURIComponent(shipper.name)}" class="block text-center bg-gray-800 hover:bg-gray-700 text-white py-2 rounded-lg text-sm">
+                    <a href="audit.html?search=${encodeURIComponent(shipper.name)}" class="block text-center bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-800 py-2 rounded-lg text-sm">
                         View History →
                     </a>
                 `;
@@ -198,11 +204,11 @@
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.filter-btn').forEach(b => {
-                    b.classList.remove('bg-gray-800', 'text-white');
-                    b.classList.add('bg-gray-700', 'text-gray-400');
+                    b.classList.remove('bg-slate-50 border border-slate-200', 'text-slate-800');
+                    b.classList.add('bg-slate-100', 'text-slate-600');
                 });
-                btn.classList.remove('bg-gray-700', 'text-gray-400');
-                btn.classList.add('bg-gray-800', 'text-white');
+                btn.classList.remove('bg-slate-100', 'text-slate-600');
+                btn.classList.add('bg-slate-50 border border-slate-200', 'text-slate-800');
 
                 currentFilter = btn.dataset.filter;
                 renderShippers();

@@ -14,39 +14,43 @@
         .upload-zone.dragover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
         .spinner { animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        /* Plain Cream White Background */
+        body {
+            background-color: #FAF9F6;
+        }
     </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen">
+<body class="bg-transparent text-slate-900 min-h-screen">
     <div class="flex">
         <!-- Sidebar -->
-        <aside class="w-56 bg-gray-900 min-h-screen p-4 flex flex-col fixed">
+        <aside class="w-56 bg-white shadow-sm border border-slate-200/60 min-h-screen p-4 flex flex-col fixed">
             <div class="mb-8">
-                <h1 class="text-xl font-bold text-white">CargoScan AI</h1>
-                <p class="text-xs text-gray-500 mt-1">Customs X-Ray Analysis</p>
+                <h1 class="text-xl font-bold text-slate-800">CargoScan AI</h1>
+                <p class="text-xs text-slate-500 mt-1">Customs X-Ray Analysis</p>
             </div>
             <nav class="flex-1 space-y-1">
-                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">📡</span> Scan
                 </a>
-                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg bg-gray-800 text-white">
+                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-800">
                     <span class="mr-3">🔄</span> Compare
                 </a>
-                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">📋</span> Audit Trail
                 </a>
-                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">🚢</span> Shippers
                 </a>
-                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">📊</span> Feedback
                 </a>
-                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">📄</span> Reports
                 </a>
             </nav>
-            <div class="pt-4 border-t border-gray-800">
-                <p class="text-xs text-gray-600 text-center">Powered by Gemini 2.5 Flash</p>
-                <p class="text-xs text-gray-600 text-center mt-1">For official use only</p>
+            <div class="pt-4 border-t border-slate-200">
+                <p class="text-xs text-slate-400 text-center">Powered by Gemini 2.5 Flash</p>
+                <p class="text-xs text-slate-400 text-center mt-1">For official use only</p>
             </div>
         </aside>
 
@@ -58,12 +62,12 @@
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <!-- Reference Image -->
                 <div>
-                    <h3 class="font-semibold text-blue-400 mb-2">Reference Scan (Known-Good Baseline)</h3>
+                    <h3 class="font-semibold text-blue-700 mb-2">Reference Scan (Known-Good Baseline)</h3>
                     <div id="uploadZone1" class="upload-zone border-2 border-dashed border-blue-700 rounded-xl p-6 text-center cursor-pointer hover:border-blue-500" data-canvas="canvas1">
                         <input type="file" id="imageInput1" accept="image/*" class="hidden">
                         <div class="placeholder">
                             <div class="text-3xl mb-2">📤</div>
-                            <p class="text-gray-400 text-sm">Drop reference scan here</p>
+                            <p class="text-slate-600 text-sm">Drop reference scan here</p>
                         </div>
                         <canvas id="canvas1" class="hidden max-w-full mx-auto rounded-lg"></canvas>
                     </div>
@@ -71,12 +75,12 @@
 
                 <!-- Current Image -->
                 <div>
-                    <h3 class="font-semibold text-orange-400 mb-2">Current Scan (Today's Shipment)</h3>
+                    <h3 class="font-semibold text-orange-700 mb-2">Current Scan (Today's Shipment)</h3>
                     <div id="uploadZone2" class="upload-zone border-2 border-dashed border-orange-700 rounded-xl p-6 text-center cursor-pointer hover:border-orange-500" data-canvas="canvas2">
                         <input type="file" id="imageInput2" accept="image/*" class="hidden">
                         <div class="placeholder">
                             <div class="text-3xl mb-2">📤</div>
-                            <p class="text-gray-400 text-sm">Drop current scan here</p>
+                            <p class="text-slate-600 text-sm">Drop current scan here</p>
                         </div>
                         <canvas id="canvas2" class="hidden max-w-full mx-auto rounded-lg"></canvas>
                     </div>
@@ -84,14 +88,14 @@
             </div>
 
             <!-- Controls -->
-            <div class="bg-gray-900 rounded-xl p-4 mb-6">
+            <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 mb-6">
                 <div class="flex items-center gap-6">
                     <div>
-                        <label class="block text-sm text-gray-400 mb-1">Sensitivity: <span id="sensitivityValue">25</span></label>
+                        <label class="block text-sm text-slate-600 mb-1">Sensitivity: <span id="sensitivityValue">25</span></label>
                         <input type="range" id="sensitivitySlider" min="5" max="80" value="25" class="w-48">
                     </div>
                     <div>
-                        <label class="block text-sm text-gray-400 mb-1">Overlay Opacity: <span id="opacityValue">80</span>%</label>
+                        <label class="block text-sm text-slate-600 mb-1">Overlay Opacity: <span id="opacityValue">80</span>%</label>
                         <input type="range" id="opacitySlider" min="0" max="100" value="80" class="w-48">
                     </div>
                     <button id="compareBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
@@ -104,73 +108,73 @@
             <div id="resultsPanel" class="hidden">
                 <!-- Three Panel View -->
                 <div class="grid grid-cols-3 gap-4 mb-6">
-                    <div class="bg-gray-900 rounded-xl p-3">
-                        <h4 class="text-sm text-gray-400 mb-2">Reference</h4>
+                    <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-3">
+                        <h4 class="text-sm text-slate-600 mb-2">Reference</h4>
                         <canvas id="resultCanvas1" class="w-full rounded-lg"></canvas>
                     </div>
-                    <div class="bg-gray-900 rounded-xl p-3">
-                        <h4 class="text-sm text-gray-400 mb-2">Current</h4>
+                    <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-3">
+                        <h4 class="text-sm text-slate-600 mb-2">Current</h4>
                         <canvas id="resultCanvas2" class="w-full rounded-lg"></canvas>
                     </div>
-                    <div class="bg-gray-900 rounded-xl p-3">
-                        <h4 class="text-sm text-gray-400 mb-2">Difference Map</h4>
+                    <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-3">
+                        <h4 class="text-sm text-slate-600 mb-2">Difference Map</h4>
                         <canvas id="diffCanvas" class="w-full rounded-lg"></canvas>
                     </div>
                 </div>
 
                 <!-- Stats Cards -->
                 <div class="grid grid-cols-4 gap-4 mb-6">
-                    <div class="bg-gray-900 rounded-xl p-4 text-center">
-                        <p class="text-gray-500 text-sm">Changed Pixels</p>
+                    <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 text-center">
+                        <p class="text-slate-500 text-sm">Changed Pixels</p>
                         <p id="changedPercent" class="text-2xl font-bold">--%</p>
                     </div>
-                    <div class="bg-gray-900 rounded-xl p-4 text-center">
-                        <p class="text-gray-500 text-sm">Average Delta</p>
+                    <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 text-center">
+                        <p class="text-slate-500 text-sm">Average Delta</p>
                         <p id="avgDelta" class="text-2xl font-bold">--</p>
                     </div>
-                    <div class="bg-gray-900 rounded-xl p-4 text-center">
-                        <p class="text-gray-500 text-sm">Sensitivity</p>
+                    <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 text-center">
+                        <p class="text-slate-500 text-sm">Sensitivity</p>
                         <p id="usedThreshold" class="text-2xl font-bold">--</p>
                     </div>
-                    <div class="bg-gray-900 rounded-xl p-4 text-center">
-                        <p class="text-gray-500 text-sm">Pixel Risk Level</p>
+                    <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 text-center">
+                        <p class="text-slate-500 text-sm">Pixel Risk Level</p>
                         <p id="pixelRisk" class="text-2xl font-bold">--</p>
                     </div>
                 </div>
 
                 <!-- Gemini Semantic Analysis -->
-                <div class="bg-gray-900 rounded-xl p-4 mb-6">
+                <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 mb-6">
                     <h4 class="font-semibold mb-3">AI Semantic Analysis</h4>
-                    <div id="geminiLoading" class="text-gray-500">
+                    <div id="geminiLoading" class="text-slate-500">
                         <span class="spinner inline-block w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full mr-2"></span>
                         Analyzing with Gemini...
                     </div>
                     <div id="geminiResults" class="hidden">
                         <div class="flex items-center gap-3 mb-3">
                             <span id="geminiSeverity" class="px-3 py-1 rounded font-bold">--</span>
-                            <p id="geminiSummary" class="text-gray-300"></p>
+                            <p id="geminiSummary" class="text-slate-700"></p>
                         </div>
-                        <p class="text-sm text-gray-400 mb-3"><strong>Recommendation:</strong> <span id="geminiRecommendation"></span></p>
+                        <p class="text-sm text-slate-600 mb-3"><strong>Recommendation:</strong> <span id="geminiRecommendation"></span></p>
                         <div id="differencesContainer" class="space-y-2"></div>
                     </div>
                 </div>
 
                 <!-- Officer Action -->
-                <div class="bg-gray-900 rounded-xl p-4">
+                <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4">
                     <h4 class="font-semibold mb-3">Officer Action</h4>
                     <div class="grid grid-cols-2 gap-4 mb-3">
                         <div>
-                            <label class="block text-sm text-gray-400 mb-1">Officer Name</label>
-                            <input type="text" id="officerInput" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                            <label class="block text-sm text-slate-600 mb-1">Officer Name</label>
+                            <input type="text" id="officerInput" class="w-full bg-slate-50 border border-slate-200 border border-slate-300 rounded-lg px-3 py-2 text-slate-800">
                         </div>
                         <div>
-                            <label class="block text-sm text-gray-400 mb-1">Notes</label>
-                            <input type="text" id="notesInput" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                            <label class="block text-sm text-slate-600 mb-1">Notes</label>
+                            <input type="text" id="notesInput" class="w-full bg-slate-50 border border-slate-200 border border-slate-300 rounded-lg px-3 py-2 text-slate-800">
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-2">
                         <button class="action-btn bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium" data-action="flagged">🚩 Flag</button>
-                        <button class="action-btn bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium" data-action="cleared">✓ Clear</button>
+                        <button class="action-btn bg-green-600 hover:bg-green-200 text-white py-2 rounded-lg font-medium" data-action="cleared">✓ Clear</button>
                         <button class="action-btn bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg font-medium" data-action="escalated">⬆ Escalate</button>
                     </div>
                 </div>
@@ -328,8 +332,8 @@
             const severityEl = document.getElementById('geminiSeverity');
             severityEl.textContent = severity;
             severityEl.className = 'px-3 py-1 rounded font-bold ' +
-                (severity === 'HIGH' ? 'bg-red-900 text-red-400' :
-                 severity === 'MEDIUM' ? 'bg-yellow-900 text-yellow-400' : 'bg-green-900 text-green-400');
+                (severity === 'HIGH' ? 'bg-red-100 text-red-700' :
+                 severity === 'MEDIUM' ? 'bg-yellow-900 text-yellow-400' : 'bg-green-100 text-green-700');
 
             document.getElementById('geminiSummary').textContent = result.summary || '';
             document.getElementById('geminiRecommendation').textContent = result.recommendation || '';
@@ -338,14 +342,14 @@
             container.innerHTML = '';
             (result.differences || []).forEach(diff => {
                 const el = document.createElement('div');
-                el.className = 'flex items-center gap-3 bg-gray-800 rounded-lg p-2';
+                el.className = 'flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-lg p-2';
 
                 const dotColor = diff.severity === 'HIGH' ? 'bg-red-500' :
                                  diff.severity === 'MEDIUM' ? 'bg-yellow-500' : 'bg-green-500';
 
                 el.innerHTML = `
                     <span class="w-3 h-3 rounded-full ${dotColor}"></span>
-                    <span class="text-gray-400 text-sm">${diff.location}:</span>
+                    <span class="text-slate-600 text-sm">${diff.location}:</span>
                     <span class="text-sm">${diff.description}</span>
                 `;
                 container.appendChild(el);
