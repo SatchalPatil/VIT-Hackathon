@@ -4,39 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CargoScan AI - Analyst Feedback</title>
+    <style>
+        /* Plain Cream White Background */
+        body {
+            background-color: #FAF9F6;
+        }
+    </style>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen">
+<body class="bg-transparent text-slate-900 min-h-screen">
     <div class="flex">
         <!-- Sidebar -->
-        <aside class="w-56 bg-gray-900 min-h-screen p-4 flex flex-col fixed">
+        <aside class="w-56 bg-white shadow-sm border border-slate-200/60 min-h-screen p-4 flex flex-col fixed">
             <div class="mb-8">
-                <h1 class="text-xl font-bold text-white">CargoScan AI</h1>
-                <p class="text-xs text-gray-500 mt-1">Customs X-Ray Analysis</p>
+                <h1 class="text-xl font-bold text-slate-800">CargoScan AI</h1>
+                <p class="text-xs text-slate-500 mt-1">Customs X-Ray Analysis</p>
             </div>
             <nav class="flex-1 space-y-1">
-                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">📡</span> Scan
                 </a>
-                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">🔄</span> Compare
                 </a>
-                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">📋</span> Audit Trail
                 </a>
-                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">🚢</span> Shippers
                 </a>
-                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg bg-gray-800 text-white">
+                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-800">
                     <span class="mr-3">📊</span> Feedback
                 </a>
-                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">📄</span> Reports
                 </a>
             </nav>
-            <div class="pt-4 border-t border-gray-800">
-                <p class="text-xs text-gray-600 text-center">Powered by Gemini 2.5 Flash</p>
-                <p class="text-xs text-gray-600 text-center mt-1">For official use only</p>
+            <div class="pt-4 border-t border-slate-200">
+                <p class="text-xs text-slate-400 text-center">Powered by Gemini 2.5 Flash</p>
+                <p class="text-xs text-slate-400 text-center mt-1">For official use only</p>
             </div>
         </aside>
 
@@ -46,21 +52,21 @@
 
             <!-- Stats Row -->
             <div class="grid grid-cols-4 gap-4 mb-6">
-                <div class="bg-gray-900 rounded-xl p-4 text-center">
-                    <p class="text-gray-500 text-sm">Total Feedback</p>
+                <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 text-center">
+                    <p class="text-slate-500 text-sm">Total Feedback</p>
                     <p id="statTotal" class="text-2xl font-bold">0</p>
                 </div>
-                <div class="bg-gray-900 rounded-xl p-4 text-center">
-                    <p class="text-gray-500 text-sm">Correct Detections</p>
-                    <p id="statCorrect" class="text-2xl font-bold text-green-500">0</p>
+                <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 text-center">
+                    <p class="text-slate-500 text-sm">Correct Detections</p>
+                    <p id="statCorrect" class="text-2xl font-bold text-slate-700">0</p>
                 </div>
-                <div class="bg-gray-900 rounded-xl p-4 text-center">
-                    <p class="text-gray-500 text-sm">False Positives</p>
+                <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 text-center">
+                    <p class="text-slate-500 text-sm">False Positives</p>
                     <p id="statFalse" class="text-2xl font-bold text-red-500">0</p>
                 </div>
-                <div class="bg-gray-900 rounded-xl p-4 text-center">
-                    <p class="text-gray-500 text-sm">Overall Accuracy</p>
-                    <p id="statAccuracy" class="text-2xl font-bold text-blue-500">--%</p>
+                <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 text-center">
+                    <p class="text-slate-500 text-sm">Overall Accuracy</p>
+                    <p id="statAccuracy" class="text-2xl font-bold text-blue-700 font-semibold">--%</p>
                 </div>
             </div>
 
@@ -68,17 +74,17 @@
                 <!-- Left Column -->
                 <div class="space-y-6">
                     <!-- Accuracy Trend Chart -->
-                    <div class="bg-gray-900 rounded-xl p-4">
+                    <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4">
                         <h3 class="font-semibold mb-3">Accuracy Trend (Last 20 Feedback)</h3>
-                        <svg id="trendChart" width="100%" height="200" viewBox="0 0 400 200" class="bg-gray-800 rounded-lg">
+                        <svg id="trendChart" width="100%" height="200" viewBox="0 0 400 200" class="bg-slate-50 border border-slate-200 rounded-lg">
                             <!-- Chart will be rendered here -->
                         </svg>
                     </div>
 
                     <!-- Self-Learning Explanation -->
-                    <div class="bg-gray-900 rounded-xl p-4 border border-blue-800">
+                    <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 border border-blue-800">
                         <h3 class="font-semibold text-blue-400 mb-3">🧠 Active Learning Status</h3>
-                        <p class="text-sm text-gray-400 mb-3">
+                        <p class="text-sm text-slate-600 mb-3">
                             Each correction you provide feeds into future model improvements. False positives on a detection category will raise its threshold in the next training cycle.
                         </p>
                         <div class="mb-2">
@@ -86,26 +92,26 @@
                                 <span>Corrections toward retraining</span>
                                 <span id="progressText">0 / 50</span>
                             </div>
-                            <div class="h-3 bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-3 bg-slate-50 border border-slate-200 rounded-full overflow-hidden">
                                 <div id="progressBar" class="h-full bg-blue-600 transition-all duration-300" style="width: 0%"></div>
                             </div>
                         </div>
-                        <p id="retrainingStatus" class="text-sm text-gray-500"></p>
+                        <p id="retrainingStatus" class="text-sm text-slate-500"></p>
                     </div>
 
                     <!-- Category Breakdown -->
-                    <div class="bg-gray-900 rounded-xl p-4">
+                    <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4">
                         <h3 class="font-semibold mb-3">Category Breakdown</h3>
                         <div id="categoryBreakdown" class="space-y-3"></div>
-                        <div id="noCategoryData" class="text-gray-500 text-sm hidden">No category data available</div>
+                        <div id="noCategoryData" class="text-slate-500 text-sm hidden">No category data available</div>
                     </div>
                 </div>
 
                 <!-- Right Column - Feedback Log -->
-                <div class="bg-gray-900 rounded-xl p-4">
+                <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4">
                     <h3 class="font-semibold mb-3">Feedback Log</h3>
                     <div id="feedbackLog" class="space-y-2 max-h-[600px] overflow-y-auto"></div>
-                    <div id="noFeedback" class="text-gray-500 text-sm text-center py-8 hidden">
+                    <div id="noFeedback" class="text-slate-500 text-sm text-center py-8 hidden">
                         No feedback recorded yet. Mark detections as correct or false positive on the scan page.
                     </div>
                 </div>
@@ -170,8 +176,8 @@
                     return `
                         <div class="flex items-center gap-3">
                             <div class="w-32 truncate text-sm">${label}</div>
-                            <div class="flex-1 flex h-4 rounded overflow-hidden bg-gray-800">
-                                <div class="bg-green-600" style="width: ${correctPct}%"></div>
+                            <div class="flex-1 flex h-4 rounded overflow-hidden bg-slate-50 border border-slate-200">
+                                <div class="bg-slate-100" style="width: ${correctPct}%"></div>
                                 <div class="bg-red-600" style="width: ${fpPct}%"></div>
                             </div>
                             <div class="w-16 text-right text-sm ${cat.accuracy >= 70 ? 'text-green-400' : cat.accuracy >= 50 ? 'text-yellow-400' : 'text-red-400'}">${cat.accuracy}%</div>
@@ -192,17 +198,17 @@
                     const tier = Confidence.getTierFromRisk(f.detectionTier?.toLowerCase() || 'moderate');
 
                     return `
-                        <div class="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2">
+                        <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
                             <div class="flex items-center gap-3">
-                                <span class="text-xs text-gray-500">${getRelativeTime(f.timestamp)}</span>
+                                <span class="text-xs text-slate-500">${getRelativeTime(f.timestamp)}</span>
                                 <span class="text-sm">${f.detectionLabel}</span>
                                 <span class="px-1 rounded text-xs" style="background: ${tier.bgColor}; color: ${tier.color}">${f.detectionTier}</span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <span class="px-2 py-0.5 rounded text-xs ${f.isCorrect ? 'bg-green-900 text-green-400' : 'bg-red-900 text-red-400'}">
+                                <span class="px-2 py-0.5 rounded text-xs ${f.isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
                                     ${f.isCorrect ? '✓ Correct' : '✗ False Positive'}
                                 </span>
-                                <span class="text-xs text-gray-500 font-mono">${f.scanId}</span>
+                                <span class="text-xs text-slate-500 font-mono">${f.scanId}</span>
                             </div>
                         </div>
                     `;

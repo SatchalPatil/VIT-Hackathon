@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from services.gemini import analyze_image, whatif_query
+from services.analyze_yolo import analyze_image, compare_images
+from pathlib import Path
 
 router = APIRouter()
 
@@ -11,14 +12,13 @@ async def analyze_cargo(
     route: str = Form("")
 ):
     """
-    Analyze a cargo X-ray image using Gemini AI.
+    Analyze a cargo X-ray image using YOLO object detection.
 
     - **image**: X-ray image file (JPEG, PNG)
     - **manifest**: Declared cargo manifest
     - **shipper**: Shipper name (optional)
     - **route**: Shipping route (optional)
     """
-    # Validate file type
     allowed_types = ["image/jpeg", "image/png", "image/jpg", "image/webp"]
     if image.content_type not in allowed_types:
         raise HTTPException(
@@ -26,13 +26,17 @@ async def analyze_cargo(
             detail=f"Invalid file type. Allowed: {', '.join(allowed_types)}"
         )
 
-    # Read image bytes
     image_bytes = await image.read()
-
-    # Analyze with Gemini
     result = await analyze_image(image_bytes, manifest)
 
-    # Add metadata to result
+    annotated_file = result.get("annotated_image_file")
+    if annotated_file:
+        result["annotated_image_url"] = f"/output/{Path(annotated_file).name}"
+
+    raw_output_file = result.get("raw_output_file")
+    if raw_output_file:
+        result["raw_output_url"] = f"/output/{Path(raw_output_file).name}"
+
     result["metadata"] = {
         "filename": image.filename,
         "shipper": shipper,
@@ -42,16 +46,14 @@ async def analyze_cargo(
 
     return result
 
-@router.post("/whatif")
-async def whatif(
-    context: dict,
-    question: str
+@router.post("/compare")
+async def compare_cargo(
+    image1: UploadFile = File(...),
+    image2: UploadFile = File(...)
 ):
-    """
-    Ask a follow-up question about a scan.
-
-    - **context**: The scan result context
-    - **question**: Officer's question
-    """
-    result = await whatif_query(context, question)
+    """Compare two cargo X-ray scans."""
+    img1_bytes = await image1.read()
+    img2_bytes = await image2.read()
+    
+    result = await compare_images(img1_bytes, img2_bytes)
     return result

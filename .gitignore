@@ -35,3 +35,6 @@ Thumbs.db
 node_modules/
 dist/
 build/
+Output/
+Junk/
+

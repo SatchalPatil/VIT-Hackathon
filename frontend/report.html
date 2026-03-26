@@ -11,39 +11,43 @@
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast.success { background: #22c55e; }
         .toast.error { background: #ef4444; }
+        /* Plain Cream White Background */
+        body {
+            background-color: #FAF9F6;
+        }
     </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen">
+<body class="bg-transparent text-slate-700 min-h-screen">
     <div class="flex">
         <!-- Sidebar -->
-        <aside class="w-56 bg-gray-900 min-h-screen p-4 flex flex-col fixed">
+        <aside class="w-56 bg-white shadow-sm border border-slate-200/60 min-h-screen p-4 flex flex-col fixed">
             <div class="mb-8">
-                <h1 class="text-xl font-bold text-white">CargoScan AI</h1>
-                <p class="text-xs text-gray-500 mt-1">Customs X-Ray Analysis</p>
+                <h1 class="text-xl font-bold text-slate-800">CargoScan AI</h1>
+                <p class="text-xs text-slate-500 mt-1">Customs X-Ray Analysis</p>
             </div>
             <nav class="flex-1 space-y-1">
-                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">📡</span> Scan
                 </a>
-                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">🔄</span> Compare
                 </a>
-                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">📋</span> Audit Trail
                 </a>
-                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">🚢</span> Shippers
                 </a>
-                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
                     <span class="mr-3">📊</span> Feedback
                 </a>
-                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg bg-gray-800 text-white">
+                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-800">
                     <span class="mr-3">📄</span> Reports
                 </a>
             </nav>
-            <div class="pt-4 border-t border-gray-800">
-                <p class="text-xs text-gray-600 text-center">Powered by Gemini 2.5 Flash</p>
-                <p class="text-xs text-gray-600 text-center mt-1">For official use only</p>
+            <div class="pt-4 border-t border-slate-200">
+                <p class="text-xs text-slate-400 text-center">Powered by Gemini 2.5 Flash</p>
+                <p class="text-xs text-slate-400 text-center mt-1">For official use only</p>
             </div>
         </aside>
 
@@ -54,81 +58,81 @@
             <div class="grid grid-cols-2 gap-6">
                 <!-- Left Column - Form -->
                 <div class="space-y-4">
-                    <div class="bg-gray-900 rounded-xl p-4">
+                    <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4">
                         <h3 class="font-semibold mb-3">Select Scan</h3>
 
                         <div class="mb-4">
-                            <label class="block text-sm text-gray-400 mb-1">Scan Entry</label>
-                            <select id="scanSelect" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                            <label class="block text-sm text-slate-600 mb-1">Scan Entry</label>
+                            <select id="scanSelect" class="w-full bg-slate-50 border border-slate-200 border border-slate-300 rounded-lg px-3 py-2 text-slate-800">
                                 <option value="">-- Select a scan --</option>
                             </select>
                         </div>
 
-                        <button id="useLatestBtn" class="w-full bg-gray-800 hover:bg-gray-700 text-white py-2 rounded-lg text-sm mb-4">
+                        <button id="useLatestBtn" class="w-full bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-800 py-2 rounded-lg text-sm mb-4">
                             📌 Use Latest Scan
                         </button>
 
                         <div class="mb-4">
-                            <label class="block text-sm text-gray-400 mb-1">Officer Name</label>
-                            <input type="text" id="officerInput" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                            <label class="block text-sm text-slate-600 mb-1">Officer Name</label>
+                            <input type="text" id="officerInput" class="w-full bg-slate-50 border border-slate-200 border border-slate-300 rounded-lg px-3 py-2 text-slate-800">
                         </div>
 
                         <div class="mb-4">
-                            <label class="block text-sm text-gray-400 mb-1">Additional Notes</label>
-                            <textarea id="notesInput" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"></textarea>
+                            <label class="block text-sm text-slate-600 mb-1">Additional Notes</label>
+                            <textarea id="notesInput" rows="3" class="w-full bg-slate-50 border border-slate-200 border border-slate-300 rounded-lg px-3 py-2 text-slate-800"></textarea>
                         </div>
 
-                        <button id="generateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl" disabled>
+                        <button id="generateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-slate-800 font-bold py-3 rounded-xl" disabled>
                             📄 Generate PDF Report
                         </button>
                     </div>
                 </div>
 
                 <!-- Right Column - Preview -->
-                <div class="bg-gray-900 rounded-xl p-4">
+                <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4">
                     <h3 class="font-semibold mb-3">Scan Preview</h3>
 
-                    <div id="previewEmpty" class="text-center py-8 text-gray-500">
+                    <div id="previewEmpty" class="text-center py-8 text-slate-500">
                         Select a scan to preview
                     </div>
 
                     <div id="previewContent" class="hidden space-y-3">
                         <div class="flex gap-4">
-                            <img id="previewThumb" class="w-24 h-18 object-cover rounded bg-gray-800">
+                            <img id="previewThumb" class="w-24 h-18 object-cover rounded bg-slate-50 border border-slate-200">
                             <div>
                                 <p id="previewScanId" class="font-mono text-sm"></p>
-                                <p id="previewTimestamp" class="text-xs text-gray-500"></p>
+                                <p id="previewTimestamp" class="text-xs text-slate-500"></p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 text-sm">
                             <div>
-                                <span class="text-gray-500">Shipper:</span>
+                                <span class="text-slate-500">Shipper:</span>
                                 <span id="previewShipper"></span>
                             </div>
                             <div>
-                                <span class="text-gray-500">Route:</span>
+                                <span class="text-slate-500">Route:</span>
                                 <span id="previewRoute"></span>
                             </div>
                         </div>
 
                         <div>
-                            <span class="text-gray-500 text-sm">Declared:</span>
+                            <span class="text-slate-500 text-sm">Declared:</span>
                             <p id="previewDeclared" class="text-sm"></p>
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <span class="text-gray-500 text-sm">AI Risk:</span>
+                            <span class="text-slate-500 text-sm">AI Risk:</span>
                             <span id="previewRisk" class="px-2 py-0.5 rounded text-xs"></span>
                         </div>
 
                         <div>
-                            <span class="text-gray-500 text-sm">Detections:</span>
+                            <span class="text-slate-500 text-sm">Detections:</span>
                             <div id="previewDetections" class="mt-1 space-y-1"></div>
                         </div>
 
                         <div>
-                            <span class="text-gray-500 text-sm">Officer Action:</span>
+                            <span class="text-slate-500 text-sm">Officer Action:</span>
                             <span id="previewAction" class="text-sm"></span>
                         </div>
                     </div>
@@ -179,7 +183,7 @@
                 thumb.src = entry.imageThumb;
             } else {
                 thumb.src = '';
-                thumb.classList.add('bg-gray-700');
+                thumb.classList.add('bg-slate-100');
             }
 
             document.getElementById('previewScanId').textContent = entry.scanId;
@@ -199,7 +203,7 @@
             const detectionsEl = document.getElementById('previewDetections');
             const detections = entry.aiDetections || [];
             if (detections.length === 0) {
-                detectionsEl.innerHTML = '<span class="text-gray-500 text-sm">No detections</span>';
+                detectionsEl.innerHTML = '<span class="text-slate-500 text-sm">No detections</span>';
             } else {
                 detectionsEl.innerHTML = detections.map(d => {
                     const t = Confidence.getTier(d.confidence_pct || 0);
