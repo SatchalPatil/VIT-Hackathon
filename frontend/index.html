@@ -85,10 +85,25 @@
                             <p id="fileInfo" class="text-gray-500 text-sm mt-2"></p>
                         </div>
                         <!-- Loading Overlay -->
-                        <div id="loadingOverlay" class="hidden absolute inset-0 bg-gray-900/80 flex items-center justify-center rounded-xl">
-                            <div class="text-center">
-                                <div class="spinner w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
-                                <p class="text-gray-300 mt-3">Analyzing with Gemini AI...</p>
+                        <div id="loadingOverlay" class="hidden absolute inset-0 bg-gray-900/95 flex items-center justify-center rounded-xl z-50">
+                            <div class="w-full h-full flex flex-col p-6 overflow-hidden">
+                                <div class="text-center mb-4">
+                                    <div class="spinner w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-3"></div>
+                                    <h3 class="text-lg font-semibold text-blue-400">Analyzing with Roboflow...</h3>
+                                    <p class="text-gray-400 text-sm mt-1">Processing X-ray image for prohibited items</p>
+                                </div>
+                                
+                                <!-- Log Viewer -->
+                                <div id="logViewer" class="flex-1 bg-gray-800 rounded-lg p-4 overflow-y-auto font-mono text-sm mb-4 border border-gray-700">
+                                    <div id="logContainer" class="space-y-1">
+                                        <div class="text-gray-500">Initializing analysis...</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Progress indicator -->
+                                <div class="text-center">
+                                    <p id="loadingStatus" class="text-gray-300 text-xs">Waiting for Roboflow API...</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -154,6 +169,12 @@
                     <!-- Detection Cards -->
                     <div id="detectionsContainer" class="space-y-3"></div>
 
+                    <!-- Raw Roboflow Output -->
+                    <div id="rawOutputPanel" class="bg-gray-900 rounded-xl p-4 hidden">
+                        <h4 class="font-semibold mb-3">Raw Roboflow Output</h4>
+                        <pre id="rawOutputContent" class="bg-gray-800 rounded-lg p-3 text-xs text-gray-200 overflow-auto max-h-80"></pre>
+                    </div>
+
                     <!-- Officer Action Panel -->
                     <div class="bg-gray-900 rounded-xl p-4">
                         <h4 class="font-semibold mb-3">Officer Action</h4>
@@ -204,9 +225,113 @@
     <script>
         // State
         let currentImage = null;
+        let currentImageDataUrl = null;
+        let currentAnnotatedImage = null;
         let currentResult = null;
         let currentEntry = null;
         let currentViewMode = 'original';
+        const LAST_SCAN_STATE_KEY = 'ciibs_last_scan_state';
+
+        function getRawPredictions(result) {
+            const predictions = result?.raw_output?.predictions;
+            return Array.isArray(predictions) ? predictions : [];
+        }
+
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function persistLastScanState(result) {
+            if (!result || !currentImageDataUrl) return;
+            try {
+                sessionStorage.setItem(LAST_SCAN_STATE_KEY, JSON.stringify({
+                    result,
+                    imageDataUrl: currentImageDataUrl,
+                    savedAt: new Date().toISOString()
+                }));
+            } catch (e) {
+                console.warn('Unable to persist scan state:', e);
+            }
+        }
+
+        function restoreLastScanState() {
+            const raw = sessionStorage.getItem(LAST_SCAN_STATE_KEY);
+            if (!raw) return;
+
+            try {
+                const state = JSON.parse(raw);
+                if (!state?.result || !state?.imageDataUrl) return;
+
+                const img = new Image();
+                img.onload = () => {
+                    currentImage = img;
+                    currentImageDataUrl = state.imageDataUrl;
+                    currentResult = state.result;
+                    loadAnnotatedImage(state.result);
+
+                    // Restore preview
+                    const ctx = previewCanvas.getContext('2d');
+                    const maxWidth = 400;
+                    const scale = maxWidth / img.width;
+                    previewCanvas.width = maxWidth;
+                    previewCanvas.height = img.height * scale;
+                    ctx.drawImage(img, 0, 0, previewCanvas.width, previewCanvas.height);
+                    document.getElementById('uploadPlaceholder').classList.add('hidden');
+                    document.getElementById('previewContainer').classList.remove('hidden');
+                    document.getElementById('fileInfo').textContent = 'Restored previous scan after reload';
+
+                    displayResults(state.result);
+                    showToast('Restored scan result after auto-reload');
+                };
+                img.src = state.imageDataUrl;
+            } catch (e) {
+                console.warn('Failed to restore scan state:', e);
+            }
+        }
+
+        function loadAnnotatedImage(result) {
+            currentAnnotatedImage = null;
+            const annotatedUrl = result?.annotated_image_url;
+            const annotatedB64 = result?.annotated_image_b64;
+            if (!annotatedUrl && !annotatedB64) return;
+
+            const annotatedImg = new Image();
+            annotatedImg.onload = () => {
+                currentAnnotatedImage = annotatedImg;
+                if (currentViewMode === 'annotated') {
+                    updateCanvasView();
+                }
+            };
+
+            const loadFromBase64 = () => {
+                if (!annotatedB64) {
+                    console.warn('Annotated image URL failed and no base64 fallback found');
+                    return;
+                }
+                const clean = String(annotatedB64).trim();
+                const src = clean.startsWith('data:image') ? clean : `data:image/jpeg;base64,${clean}`;
+                annotatedImg.onerror = () => {
+                    console.warn('Failed to decode annotated image from backend response');
+                };
+                annotatedImg.src = src;
+            };
+
+            if (annotatedUrl) {
+                const normalized = annotatedUrl.startsWith('http')
+                    ? annotatedUrl
+                    : `${API_BASE}${annotatedUrl.startsWith('/') ? '' : '/'}${annotatedUrl}`;
+                annotatedImg.onerror = loadFromBase64;
+                annotatedImg.src = normalized;
+                return;
+            }
+
+            loadFromBase64();
+        }
 
         // DOM Elements
         const uploadZone = document.getElementById('uploadZone');
@@ -252,6 +377,7 @@
 
             const reader = new FileReader();
             reader.onload = (e) => {
+                currentImageDataUrl = e.target.result;
                 const img = new Image();
                 img.onload = () => {
                     currentImage = img;
@@ -296,6 +422,10 @@
             scanBtn.disabled = true;
 
             try {
+                // Clear logs
+                const logContainer = document.getElementById('logContainer');
+                logContainer.innerHTML = '';
+
                 // Get image as blob
                 const canvas = document.createElement('canvas');
                 canvas.width = currentImage.width;
@@ -311,9 +441,21 @@
                 formData.append('shipper', shipper);
                 formData.append('route', route);
 
+                // Update status
+                document.getElementById('loadingStatus').textContent = 'Sending image to Roboflow API...';
+
                 // Call API
                 const result = await API.analyzeImage(formData);
                 currentResult = result;
+                loadAnnotatedImage(result);
+
+                // Persist immediately so UI can recover if browser reloads
+                persistLastScanState(result);
+
+                // Display logs from response
+                if (result.logs && Array.isArray(result.logs)) {
+                    displayProcessLogs(result.logs);
+                }
 
                 // Create thumbnail for audit
                 const thumbCanvas = document.createElement('canvas');
@@ -344,17 +486,69 @@
                     Shipper.updateShipperProfile(result, shipper, null, route);
                 }
 
+                // Brief delay to show final logs
+                await new Promise(r => setTimeout(r, 1000));
+
                 // Display results
                 displayResults(result);
 
             } catch (error) {
                 console.error('Scan error:', error);
+                addLogMessage('❌ Error: ' + (error.message || 'Scan failed'), 'error');
                 showToast(error.message || 'Scan failed', 'error');
             } finally {
                 loadingOverlay.classList.add('hidden');
                 scanBtn.disabled = false;
             }
         });
+
+        // Function to add log messages in real-time
+        function addLogMessage(message, level = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const logEntry = document.createElement('div');
+            
+            const levelStyles = {
+                'success': 'text-green-400',
+                'warning': 'text-yellow-400',
+                'error': 'text-red-400',
+                'info': 'text-blue-300'
+            };
+            
+            logEntry.className = `text-xs ${levelStyles[level] || 'text-gray-300'}`;
+            logEntry.textContent = message;
+            logContainer.appendChild(logEntry);
+            
+            // Auto-scroll to bottom
+            const viewer = document.getElementById('logViewer');
+            viewer.scrollTop = viewer.scrollHeight;
+        }
+
+        // Function to display process logs from Roboflow response
+        function displayProcessLogs(logs) {
+            const logContainer = document.getElementById('logContainer');
+            logContainer.innerHTML = '';
+
+            logs.forEach(log => {
+                const logEntry = document.createElement('div');
+                const levelStyles = {
+                    'success': 'text-green-400',
+                    'warning': 'text-yellow-400',
+                    'error': 'text-red-400',
+                    'info': 'text-blue-300'
+                };
+                
+                const icon = log.level === 'error' ? '❌' : (log.level === 'warning' ? '⚠️' : '💬');
+                logEntry.className = `text-xs ${levelStyles[log.level] || 'text-gray-300'} py-0.5`;
+                logEntry.innerHTML = `<span class="text-gray-500">[${log.timestamp}]</span> ${icon} ${log.message}`;
+                logContainer.appendChild(logEntry);
+            });
+
+            // Auto-scroll to bottom
+            const viewer = document.getElementById('logViewer');
+            setTimeout(() => {
+                viewer.scrollTop = viewer.scrollHeight;
+            }, 0);
+        }
 
         function displayResults(result) {
             resultsPanel.classList.remove('hidden');
@@ -365,22 +559,47 @@
             resultCanvas.height = (currentImage.height / currentImage.width) * 600;
             ctx.drawImage(currentImage, 0, 0, resultCanvas.width, resultCanvas.height);
 
+            const rawPredictions = getRawPredictions(result);
+            const usingRawRoboflow = result.model_used === 'roboflow' && !!result.raw_output;
+
             // Summary bar
-            const tier = Confidence.getTierFromRisk(result.overall_risk);
             const summaryBar = document.getElementById('summaryBar');
-            summaryBar.style.borderColor = tier.color;
-            summaryBar.style.backgroundColor = tier.bgColor;
+            const riskLevelEl = document.getElementById('riskLevel');
+            const riskExplanationEl = document.getElementById('riskExplanation');
+            const recommendedActionEl = document.getElementById('recommendedAction');
+            const highestConfidenceEl = document.getElementById('highestConfidence');
 
-            document.getElementById('riskLevel').textContent = tier.label;
-            document.getElementById('riskLevel').style.color = tier.color;
-            document.getElementById('riskExplanation').textContent = result.risk_explanation || '';
-            document.getElementById('recommendedAction').textContent = Confidence.getRecommendedAction(tier);
+            if (usingRawRoboflow) {
+                summaryBar.style.borderColor = '#3b82f6';
+                summaryBar.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                riskLevelEl.textContent = 'ROBOFLOW RAW OUTPUT';
+                riskLevelEl.style.color = '#60a5fa';
+                const rawFile = result.raw_output_file || 'N/A';
+                const annotatedFile = result.annotated_image_file || 'N/A';
+                riskExplanationEl.textContent = `Raw JSON: ${rawFile} | Annotated image: ${annotatedFile}`;
+                recommendedActionEl.textContent = 'Review raw output exactly as returned by Roboflow.';
 
-            // Highest confidence
-            const detections = result.detections || [];
-            const highest = detections.reduce((max, d) => Math.max(max, d.confidence_pct || 0), 0);
-            document.getElementById('highestConfidence').textContent = `${highest}%`;
-            document.getElementById('highestConfidence').style.color = Confidence.getTier(highest).color;
+                const highestRaw = rawPredictions.reduce((max, p) => {
+                    const confidence = Number(p?.confidence);
+                    return Number.isFinite(confidence) ? Math.max(max, confidence) : max;
+                }, 0);
+                highestConfidenceEl.textContent = highestRaw > 0 ? String(highestRaw) : '--';
+                highestConfidenceEl.style.color = '#60a5fa';
+            } else {
+                const tier = Confidence.getTierFromRisk(result.overall_risk);
+                summaryBar.style.borderColor = tier.color;
+                summaryBar.style.backgroundColor = tier.bgColor;
+
+                riskLevelEl.textContent = tier.label;
+                riskLevelEl.style.color = tier.color;
+                riskExplanationEl.textContent = result.risk_explanation || '';
+                recommendedActionEl.textContent = Confidence.getRecommendedAction(tier);
+
+                const detections = result.detections || [];
+                const highest = detections.reduce((max, d) => Math.max(max, d.confidence_pct || 0), 0);
+                highestConfidenceEl.textContent = `${highest}%`;
+                highestConfidenceEl.style.color = Confidence.getTier(highest).color;
+            }
 
             // AI accuracy
             document.getElementById('aiAccuracy').textContent = Feedback.calculateAccuracy();
@@ -392,81 +611,100 @@
             const container = document.getElementById('detectionsContainer');
             container.innerHTML = '';
 
-            detections.sort((a, b) => (b.confidence_pct || 0) - (a.confidence_pct || 0));
+            const rawOutputPanel = document.getElementById('rawOutputPanel');
+            const rawOutputContent = document.getElementById('rawOutputContent');
 
-            detections.forEach((det, index) => {
-                const detTier = Confidence.getTier(det.confidence_pct || 0);
-                const card = document.createElement('div');
-                card.className = 'bg-gray-900 rounded-xl p-4';
-                card.style.borderLeft = `4px solid ${detTier.color}`;
+            if (usingRawRoboflow) {
+                rawOutputPanel.classList.remove('hidden');
+                rawOutputContent.textContent = JSON.stringify(result.raw_output, null, 2);
 
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <h4 class="font-semibold">${det.label || 'Unknown'}</h4>
-                            <span class="inline-block px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-400">${det.category || 'N/A'}</span>
-                        </div>
-                        <span class="px-2 py-0.5 rounded text-xs" style="background: ${detTier.bgColor}; color: ${detTier.color}">${det.region || ''}</span>
-                    </div>
-                    <div class="flex gap-4">
-                        <div id="gauge-${index}" class="w-24"></div>
-                        <div class="flex-1">
-                            <div class="bg-gray-800 rounded-lg p-3 mb-2">
-                                <p class="text-sm text-gray-400">Why flagged:</p>
-                                <p class="text-sm">${det.reason || 'No explanation'}</p>
+                if (rawPredictions.length === 0) {
+                    const emptyCard = document.createElement('div');
+                    emptyCard.className = 'bg-gray-900 rounded-xl p-4 border border-blue-900/60 text-blue-200 text-sm';
+                    emptyCard.textContent = 'Roboflow returned raw output, but no prediction objects were present.';
+                    container.appendChild(emptyCard);
+                } else {
+                    rawPredictions.forEach((prediction, index) => {
+                        const card = document.createElement('div');
+                        card.className = 'bg-gray-900 rounded-xl p-4 border border-blue-900/60';
+                        card.innerHTML = `
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="font-semibold text-blue-300">Prediction ${index + 1}</h4>
+                                <span class="text-xs text-blue-200">Exact Roboflow payload</span>
                             </div>
-                            <p class="text-xs text-gray-500">${Confidence.getCalibrationNote(det.confidence_pct || 0)}</p>
-                        </div>
-                    </div>
-                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-800">
-                        <div class="flex gap-2">
-                            <button class="feedback-btn px-3 py-1 bg-green-900/50 text-green-400 rounded text-sm hover:bg-green-900" data-correct="true" data-index="${index}">✓ Correct</button>
-                            <button class="feedback-btn px-3 py-1 bg-red-900/50 text-red-400 rounded text-sm hover:bg-red-900" data-correct="false" data-index="${index}">✗ False positive</button>
-                        </div>
-                        <button class="px-3 py-1 bg-gray-800 rounded text-sm hover:bg-gray-700">Mark for inspection</button>
-                    </div>
-                `;
-                container.appendChild(card);
-
-                // Render gauge
-                Confidence.renderGauge(document.getElementById(`gauge-${index}`), det.confidence_pct || 0, { animate: true });
-            });
-
-            // Feedback button handlers
-            document.querySelectorAll('.feedback-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const index = parseInt(e.target.dataset.index);
-                    const isCorrect = e.target.dataset.correct === 'true';
-                    const det = detections[index];
-
-                    Feedback.addFeedback({
-                        entryId: currentEntry.entryId,
-                        scanId: currentEntry.scanId,
-                        detectionLabel: det.label,
-                        detectionTier: Confidence.getTier(det.confidence_pct || 0).label,
-                        isCorrect: isCorrect
+                            <pre class="bg-gray-800 rounded-lg p-3 text-xs text-gray-200 overflow-auto">${escapeHtml(JSON.stringify(prediction, null, 2))}</pre>
+                        `;
+                        container.appendChild(card);
                     });
+                }
+            } else {
+                rawOutputPanel.classList.add('hidden');
+                rawOutputContent.textContent = '';
 
-                    e.target.classList.add('opacity-50');
-                    e.target.disabled = true;
-                    showToast('Feedback recorded');
+                const detections = result.detections || [];
+                detections.sort((a, b) => (b.confidence_pct || 0) - (a.confidence_pct || 0));
+
+                detections.forEach((det, index) => {
+                    const detTier = Confidence.getTier(det.confidence_pct || 0);
+                    const card = document.createElement('div');
+                    card.className = 'bg-gray-900 rounded-xl p-4';
+                    card.style.borderLeft = `4px solid ${detTier.color}`;
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-semibold">${det.label || 'Unknown'}</h4>
+                                <span class="inline-block px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-400">${det.category || 'N/A'}</span>
+                            </div>
+                            <span class="px-2 py-0.5 rounded text-xs" style="background: ${detTier.bgColor}; color: ${detTier.color}">${det.region || ''}</span>
+                        </div>
+                        <div class="flex gap-4">
+                            <div id="gauge-${index}" class="w-24"></div>
+                            <div class="flex-1">
+                                <div class="bg-gray-800 rounded-lg p-3 mb-2">
+                                    <p class="text-sm text-gray-400">Why flagged:</p>
+                                    <p class="text-sm">${det.reason || 'No explanation'}</p>
+                                </div>
+                                <p class="text-xs text-gray-500">${Confidence.getCalibrationNote(det.confidence_pct || 0)}</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-800">
+                            <div class="flex gap-2">
+                                <button class="feedback-btn px-3 py-1 bg-green-900/50 text-green-400 rounded text-sm hover:bg-green-900" data-correct="true" data-index="${index}">✓ Correct</button>
+                                <button class="feedback-btn px-3 py-1 bg-red-900/50 text-red-400 rounded text-sm hover:bg-red-900" data-correct="false" data-index="${index}">✗ False positive</button>
+                            </div>
+                            <button class="px-3 py-1 bg-gray-800 rounded text-sm hover:bg-gray-700">Mark for inspection</button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+
+                    // Render gauge
+                    Confidence.renderGauge(document.getElementById(`gauge-${index}`), det.confidence_pct || 0, { animate: true });
                 });
-            });
 
-            // View mode buttons
-            document.querySelectorAll('.view-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.view-btn').forEach(b => {
-                        b.classList.remove('bg-gray-800', 'text-white');
-                        b.classList.add('bg-gray-700', 'text-gray-400');
+                // Feedback button handlers
+                document.querySelectorAll('.feedback-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = parseInt(e.target.dataset.index);
+                        const isCorrect = e.target.dataset.correct === 'true';
+                        const det = detections[index];
+
+                        Feedback.addFeedback({
+                            entryId: currentEntry.entryId,
+                            scanId: currentEntry.scanId,
+                            detectionLabel: det.label,
+                            detectionTier: Confidence.getTier(det.confidence_pct || 0).label,
+                            isCorrect: isCorrect
+                        });
+
+                        e.target.classList.add('opacity-50');
+                        e.target.disabled = true;
+                        showToast('Feedback recorded');
                     });
-                    e.target.classList.remove('bg-gray-700', 'text-gray-400');
-                    e.target.classList.add('bg-gray-800', 'text-white');
-
-                    currentViewMode = e.target.dataset.mode;
-                    updateCanvasView();
                 });
-            });
+            }
+
+            updateCanvasView();
         }
 
         function updateCanvasView() {
@@ -479,13 +717,32 @@
                     Heatmap.drawOriginal(resultCanvas, currentImage);
                     break;
                 case 'annotated':
-                    Heatmap.drawAnnotated(resultCanvas, currentImage, detections);
+                    if (currentAnnotatedImage) {
+                        Heatmap.drawOriginal(resultCanvas, currentAnnotatedImage);
+                    } else {
+                        Heatmap.drawAnnotated(resultCanvas, currentImage, detections);
+                    }
                     break;
                 case 'heatmap':
                     Heatmap.drawHeatmap(resultCanvas, currentImage, detections);
                     break;
             }
         }
+
+        // View mode buttons
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.view-btn').forEach(b => {
+                    b.classList.remove('bg-gray-800', 'text-white');
+                    b.classList.add('bg-gray-700', 'text-gray-400');
+                });
+                e.target.classList.remove('bg-gray-700', 'text-gray-400');
+                e.target.classList.add('bg-gray-800', 'text-white');
+
+                currentViewMode = e.target.dataset.mode;
+                updateCanvasView();
+            });
+        });
 
         // Officer action buttons
         document.querySelectorAll('.action-btn').forEach(btn => {
@@ -562,6 +819,9 @@
                 showToast('Failed to get response', 'error');
             }
         });
+
+        // Restore any saved result if page auto-reloaded during/after scan
+        restoreLastScanState();
     </script>
 </body>
 </html>

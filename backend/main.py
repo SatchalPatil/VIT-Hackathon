@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 import os
+from pathlib import Path
 
 # Load environment variables
 load_dotenv()
@@ -16,6 +18,10 @@ app = FastAPI(
     description="Cargo X-ray analysis API for customs and border security",
     version="1.0.0"
 )
+
+output_dir = Path(__file__).resolve().parents[1] / "Output"
+output_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/output", StaticFiles(directory=str(output_dir)), name="output")
 
 # CORS middleware - allow all origins for development
 app.add_middleware(
