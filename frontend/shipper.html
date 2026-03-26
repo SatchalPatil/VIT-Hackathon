@@ -6,48 +6,55 @@
     <style>
         /* Plain Cream White Background */
         body {
-            background-color: #FAF9F6;
+            background-color: #f0f4f8;
         }
     </style>
     <title>CargoScan AI - Shipper Profiles</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/customs-theme.css">
 </head>
-<body class="bg-transparent text-slate-900 min-h-screen">
+<body class="bg-transparent text-slate-900 min-h-screen customs-theme">
     <div class="flex">
         <!-- Sidebar -->
-        <aside class="w-56 bg-white shadow-sm border border-slate-200/60 min-h-screen p-4 flex flex-col fixed">
-            <div class="mb-8">
-                <h1 class="text-xl font-bold text-slate-800">CargoScan AI</h1>
-                <p class="text-xs text-slate-500 mt-1">Customs X-Ray Analysis</p>
+        <aside class="w-56 customs-sidebar min-h-screen p-4 flex flex-col fixed" style="background-color: white; border-right: 1px solid #e2e8f0;">
+            <div class="mb-6">
+                <h1 class="text-lg font-bold">CargoScan AI</h1>
+                <p class="brand-sub text-xs mt-0.5">Customs Intelligence</p>
             </div>
-            <nav class="flex-1 space-y-1">
-                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">📡</span> Scan
+            <nav class="flex-1 space-y-0.5">
+                <a href="index.html" class="customs-nav-link">
+                    <span class="nav-icon">🔍</span> X-Ray Scan
                 </a>
-                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">🔄</span> Compare
+                <a href="compare.html" class="customs-nav-link">
+                    <span class="nav-icon">⚖️</span> Compare
                 </a>
-                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">📋</span> Audit Trail
+                <a href="audit.html" class="customs-nav-link">
+                    <span class="nav-icon">📋</span> History
                 </a>
-                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-800">
-                    <span class="mr-3">🚢</span> Shippers
+                <a href="shipper.html" class="customs-nav-link active">
+                    <span class="nav-icon">🚢</span> Shippers
                 </a>
-                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">📊</span> Feedback
+                <a href="feedback.html" class="customs-nav-link">
+                    <span class="nav-icon">📊</span> Learning
                 </a>
-                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">📄</span> Reports
+                <a href="report.html" class="customs-nav-link">
+                    <span class="nav-icon">📄</span> Reports
                 </a>
             </nav>
-            <div class="pt-4 border-t border-slate-200">
-                <p class="text-xs text-slate-400 text-center">Powered by Gemini 2.5 Flash</p>
-                <p class="text-xs text-slate-400 text-center mt-1">For official use only</p>
+            <div class="pt-3 border-t border-slate-700">
+                <p class="text-xs text-slate-500 text-center">Official Use Only</p>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 ml-56 p-6">
+        <main class="flex-1 ml-56 p-6 relative">
+            <!-- Info Button -->
+            <div class="customs-info-btn-container">
+                <button class="customs-info-btn">i</button>
+                <div class="customs-info-tooltip">
+                    <strong>Purpose:</strong> Tracks the reliability and risk profile of shipping companies based on their past inspections to help prioritize checks.
+                </div>
+            </div>
             <h2 class="text-2xl font-bold mb-6">Shipper Risk Profiles</h2>
 
             <!-- Filters -->

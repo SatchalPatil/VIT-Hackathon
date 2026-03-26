@@ -3,78 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CargoScan AI - Scan</title>
+    <title>CargoScan AI - X-Ray Scanner</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="css/customs-theme.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: #f0f4f8;
+            font-family: 'Inter', system-ui, sans-serif;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        /* ===== SIDEBAR ===== */
+        aside {
+            background-color: #1e3a5f !important;
+            border-right: none !important;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.15) !important;
+        }
+        aside h1 { color: #60a5fa !important; font-size: 1.25rem !important; font-weight: 800 !important; letter-spacing: -0.03em !important; }
+        aside p { color: #94a3b8 !important; }
+        .customs-nav-link {
+            color: #94a3b8 !important;
+            border-radius: 10px !important;
+            padding: 10px 14px !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+            border: none !important;
+            margin-bottom: 2px !important;
+        }
+        .customs-nav-link:hover {
+            background-color: rgba(255,255,255,0.08) !important;
+            color: #ffffff !important;
+            transform: translateX(3px);
+        }
+        .customs-nav-link.active {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+        }
+
+        /* ===== MAIN AREA ===== */
+        main { background-color: #f0f4f8 !important; min-height: 100vh; }
+
+        /* Page Title */
+        h2 { font-size: 1.75rem !important; font-weight: 800 !important; color: #1e293b !important; letter-spacing: -0.03em !important; }
+
+        /* ===== CARDS ===== */
+        .bg-white,
+        div.bg-white {
+            background-color: #ffffff !important;
+            border-radius: 16px !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.08) !important;
+        }
+        .customs-card {
+            background-color: #ffffff !important;
+            border-radius: 16px !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.08) !important;
+        }
+
+        /* ===== UPLOAD ZONE ===== */
+        #uploadZone {
+            border: 2.5px dashed #93c5fd !important;
+            background-color: #eff6ff !important;
+            border-radius: 16px !important;
+            transition: all 0.25s ease;
+        }
+        #uploadZone:hover {
+            border-color: #2563eb !important;
+            background-color: #dbeafe !important;
+        }
+        .upload-zone.dragover { border-color: #1d4ed8 !important; background-color: #bfdbfe !important; }
+
+        /* ===== FORM INPUTS ===== */
+        input[type="text"], textarea, select, .customs-input {
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 10px !important;
+            background-color: #f8fafc !important;
+            padding: 11px 14px !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 0.9rem !important;
+            color: #1e293b !important;
+            transition: all 0.2s ease !important;
+            width: 100% !important;
+        }
+        input[type="text"]:focus, textarea:focus, select:focus, .customs-input:focus {
+            outline: none !important;
+            border-color: #2563eb !important;
+            background-color: #fff !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+        }
+
+        /* ===== PRIMARY SCAN BUTTON ===== */
+        #scanBtn, .customs-btn-primary {
+            background-color: #2563eb !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 12px !important;
+            font-size: 1rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.01em !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3) !important;
+        }
+        #scanBtn:hover:not(:disabled), .customs-btn-primary:hover:not(:disabled) {
+            background-color: #1d4ed8 !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35) !important;
+        }
+        #scanBtn:disabled, .customs-btn-primary:disabled {
+            background-color: #93c5fd !important;
+            cursor: not-allowed !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        /* ===== ACTION BUTTONS ===== */
+        .customs-btn-alert {
+            background-color: #ef4444 !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 10px !important;
+            font-weight: 700 !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+        .customs-btn-alert:hover:not(:disabled) { background-color: #dc2626 !important; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(239,68,68,0.3) !important; }
+
+        .customs-btn-safe {
+            background-color: #10b981 !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 10px !important;
+            font-weight: 700 !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+        .customs-btn-safe:hover:not(:disabled) { background-color: #059669 !important; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16,185,129,0.3) !important; }
+
+        .customs-btn-warning {
+            background-color: #f59e0b !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 10px !important;
+            font-weight: 700 !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+        .customs-btn-warning:hover:not(:disabled) { background-color: #d97706 !important; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(245,158,11,0.3) !important; }
+
+        /* ===== VIEW TOGGLE BUTTONS ===== */
+        .view-btn {
+            border-radius: 8px !important;
+            border: 1.5px solid #e2e8f0 !important;
+            background-color: #f1f5f9 !important;
+            color: #64748b !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+        }
+        .view-btn.customs-btn-primary {
+            border-color: #2563eb !important;
+            color: white !important;
+        }
+        .view-btn:hover:not(.customs-btn-primary) {
+            background-color: #e2e8f0 !important;
+            color: #1e293b !important;
+        }
+
+        /* ===== RESULT CANVAS AREA ===== */
+        #resultCanvas { border-radius: 12px !important; border: 1px solid #e2e8f0 !important; }
+
+        /* ===== INFO BUTTON ===== */
+        .customs-info-btn-container { pointer-events: none; }
+        .customs-info-btn {
+            pointer-events: auto !important;
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 50% !important;
+            background-color: #2563eb !important;
+            color: white !important;
+            border: none !important;
+            font-weight: 700 !important;
+            font-size: 16px !important;
+            cursor: help !important;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3) !important;
+            transition: all 0.3s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .customs-info-btn:hover { transform: scale(1.1) !important; background-color: #1d4ed8 !important; }
+        .customs-info-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 12px;
+            width: 320px;
+            background-color: #1e293b;
+            color: #f1f5f9;
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+            z-index: 101;
+            transform: translateY(-8px);
+            pointer-events: auto;
+        }
+        .customs-info-btn-container:hover .customs-info-tooltip {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== STAT CARDS ===== */
+        .text-2xl.font-bold { font-size: 1.75rem !important; }
+
+        /* ===== LABELS ===== */
+        label { font-weight: 600 !important; color: #334155 !important; font-size: 0.875rem !important; }
+
+        /* ===== DETECTION CARDS ===== */
+        #detectionsContainer > div {
+            border-radius: 14px !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+        }
+
+        /* ===== SCROLLBARS ===== */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        /* ===== TOAST ===== */
         .toast {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 12px 24px;
-            border-radius: 8px;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            border-radius: 12px;
             color: white;
-            font-weight: 500;
+            font-weight: 600;
             z-index: 1000;
-            animation: slideIn 0.3s ease;
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
         }
         @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from { transform: translateX(120%) scale(0.9); opacity: 0; }
+            to { transform: translateX(0) scale(1); opacity: 1; }
         }
-        .toast.success { background: #22c55e; }
+        .toast.success { background: #10b981; }
         .toast.error { background: #ef4444; }
+
         .gauge-fill { transition: stroke-dashoffset 0.5s ease; }
-        .upload-zone { transition: all 0.2s ease; }
-        .upload-zone.dragover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
         .spinner { animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        /* Plain Cream White Background */
-        body {
-            background-color: #FAF9F6;
-        }
+        .upload-zone.dragover { border-color: #1d4ed8 !important; background-color: #bfdbfe !important; }
     </style>
 </head>
-<body class="bg-transparent text-slate-900 min-h-screen">
+<body class="bg-transparent text-slate-900 min-h-screen customs-theme">
     <div class="flex">
         <!-- Sidebar -->
-        <aside class="w-56 bg-gray-100 shadow-sm border border-slate-200/60 min-h-screen p-4 flex flex-col fixed">
-            <div class="mb-8">
-                <h1 class="text-xl font-bold text-slate-800">CargoScan AI</h1>
-                <p class="text-xs text-slate-500 mt-1">Customs X-Ray Analysis</p>
+        <aside class="w-56 customs-sidebar min-h-screen p-4 flex flex-col fixed" style="background-color: white; border-right: 1px solid #e2e8f0;">
+            <div class="mb-6">
+                <h1 class="text-lg font-bold">CargoScan AI</h1>
+                <p class="brand-sub text-xs mt-0.5">Customs Intelligence</p>
             </div>
-            <nav class="flex-1 space-y-1">
-                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-800">
-                    <span class="mr-3">📡</span> Scan
+            <nav class="flex-1 space-y-0.5">
+                <a href="index.html" class="customs-nav-link active">
+                    <span class="nav-icon">🔍</span> X-Ray Scan
                 </a>
-                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">🔄</span> Compare
+                <a href="compare.html" class="customs-nav-link">
+                    <span class="nav-icon">⚖️</span> Compare
                 </a>
-                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">📋</span> Audit Trail
+                <a href="audit.html" class="customs-nav-link">
+                    <span class="nav-icon">📋</span> History
                 </a>
-                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">🚢</span> Shippers
+                <a href="shipper.html" class="customs-nav-link">
+                    <span class="nav-icon">🚢</span> Shippers
                 </a>
-                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">📊</span> Feedback
+                <a href="feedback.html" class="customs-nav-link">
+                    <span class="nav-icon">📊</span> Learning
                 </a>
-                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">📄</span> Reports
+                <a href="report.html" class="customs-nav-link">
+                    <span class="nav-icon">📄</span> Reports
                 </a>
             </nav>
-            <div class="pt-4 border-t border-slate-200">
-                <p class="text-xs text-slate-400 text-center">Powered by Gemini 2.5 Flash</p>
-                <p class="text-xs text-slate-400 text-center mt-1">For official use only</p>
+            <div class="pt-3 border-t border-slate-700">
+                <p class="text-xs text-slate-500 text-center">Official Use Only</p>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 ml-56 p-6">
+        <main class="flex-1 ml-56 p-6 relative">
+            <!-- Info Button -->
+            <div class="customs-info-btn-container">
+                <button class="customs-info-btn">i</button>
+                <div class="customs-info-tooltip">
+                    <strong>Purpose:</strong> Analyzes X-Ray images against declared manifests to identify hidden contraband, mismatching goods, or anomalies.
+                </div>
+            </div>
             <div class="grid grid-cols-2 gap-6">
                 <!-- Left Column - Inputs -->
                 <div class="space-y-4">
-                    <h2 class="text-2xl font-bold">Cargo X-Ray Scan</h2>
+                    <h2 class="text-2xl font-bold" style="color: #3b82f6;">X-Ray Scanner</h2>
 
                     <!-- Upload Zone -->
                     <div id="uploadZone" class="upload-zone border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:border-gray-600">
@@ -113,93 +357,93 @@
                     </div>
 
                     <!-- Form Inputs -->
-                    <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 space-y-4">
+                    <div class="customs-card p-4 space-y-4">
                         <div>
-                            <label class="block text-sm text-slate-600 mb-1">Declared Manifest</label>
-                            <textarea id="manifestInput" rows="2" class="w-full bg-slate-50 border border-slate-200 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 placeholder-gray-500 focus:border-blue-500 focus:outline-none" placeholder="What the shipper declares is inside..."></textarea>
+                            <label class="block text-sm font-medium mb-1" style="color: #334155;">What Shipper Claims Inside</label>
+                            <textarea id="manifestInput" rows="2" class="customs-input" placeholder="List what's supposed to be in the cargo..."></textarea>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-sm text-slate-600 mb-1">Shipper Name</label>
-                                <input type="text" id="shipperInput" class="w-full bg-slate-50 border border-slate-200 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 placeholder-gray-500 focus:border-blue-500 focus:outline-none" placeholder="Company name">
+                                <label class="block text-sm font-medium mb-1" style="color: #334155;">Shipping Company</label>
+                                <input type="text" id="shipperInput" class="customs-input" placeholder="Company name">
                             </div>
                             <div>
-                                <label class="block text-sm text-slate-600 mb-1">Route / Origin</label>
-                                <input type="text" id="routeInput" class="w-full bg-slate-50 border border-slate-200 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 placeholder-gray-500 focus:border-blue-500 focus:outline-none" placeholder="e.g. Mumbai → Delhi">
+                                <label class="block text-sm font-medium mb-1" style="color: #334155;">Route / Origin</label>
+                                <input type="text" id="routeInput" class="customs-input" placeholder="e.g. Mumbai → Delhi">
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm text-slate-600 mb-1">Officer Name</label>
-                            <input type="text" id="officerInput" class="w-full bg-slate-50 border border-slate-200 border border-slate-300 rounded-lg px-3 py-2 text-slate-800 placeholder-gray-500 focus:border-blue-500 focus:outline-none" placeholder="Your name">
+                            <label class="block text-sm font-medium mb-1" style="color: #334155;">Your Name</label>
+                            <input type="text" id="officerInput" class="customs-input" placeholder="Officer name">
                         </div>
                     </div>
 
                     <!-- Scan Button -->
-                    <button id="scanBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                        🔍 Scan Image
+                    <button id="scanBtn" class="customs-btn-primary w-full py-3 text-lg font-bold" disabled>
+                        🔍 Check This Cargo
                     </button>
                 </div>
 
                 <!-- Right Column - Results -->
                 <div id="resultsPanel" class="space-y-4 hidden">
-                    <!-- Shipment Summary Bar -->
-                    <div id="summaryBar" class="rounded-xl p-4 border-2">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 id="riskLevel" class="text-2xl font-bold"></h3>
-                                <p id="riskExplanation" class="text-sm text-slate-600 mt-1"></p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-sm text-slate-500">Highest Confidence</p>
-                                <p id="highestConfidence" class="text-xl font-bold"></p>
-                            </div>
-                        </div>
-                        <div class="mt-3 pt-3 border-t border-slate-300">
-                            <p class="text-sm"><span class="text-slate-500">Recommended:</span> <span id="recommendedAction"></span></p>
-                            <p class="text-sm mt-1"><span class="text-slate-500">AI Accuracy:</span> <span id="aiAccuracy">--</span>%</p>
-                        </div>
+                    <!-- Threat Level Meter -->
+                    <div id="threatMeterContainer" class="customs-card p-4">
+                        <!-- Threat meter will be injected here by JavaScript -->
                     </div>
 
                     <!-- Canvas View with Mode Toggles -->
-                    <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4">
-                        <div class="flex gap-2 mb-3">
-                            <button class="view-btn px-3 py-1 rounded-lg text-sm bg-slate-50 border border-slate-200 text-slate-800" data-mode="original">Original</button>
-                            <button class="view-btn px-3 py-1 rounded-lg text-sm bg-slate-100 text-slate-600" data-mode="annotated">Annotated</button>
-                            <button class="view-btn px-3 py-1 rounded-lg text-sm bg-slate-100 text-slate-600" data-mode="heatmap">Heatmap</button>
+                    <div class="customs-card p-4">
+                        <div class="flex gap-2 mb-3 flex-wrap">
+                            <button class="view-btn px-3 py-1 text-sm bg-slate-100 text-slate-600" data-mode="original" style="padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer;">Original Image</button>
+                            <button class="view-btn customs-btn-primary px-3 py-1 text-sm" data-mode="annotated" style="padding: 6px 12px;">Marked Items</button>
+                            <button class="view-btn px-3 py-1 text-sm bg-slate-100 text-slate-600" data-mode="heatmap" style="padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer;">Heat Map</button>
+                            <div style="flex:1"></div>
+                            <button id="drawBoxBtn" onclick="toggleDrawMode()" class="px-3 py-1 text-sm font-semibold rounded-lg border-2 border-dashed border-orange-400 text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors" style="padding: 6px 12px; cursor:pointer;" title="Draw a box around a missed item">✏️ Draw Box</button>
                         </div>
-                        <canvas id="resultCanvas" class="w-full rounded-lg"></canvas>
+                        <div style="position:relative;display:inline-block;width:100%">
+                            <canvas id="resultCanvas" class="w-full rounded-lg" style="display:block"></canvas>
+                            <canvas id="drawCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:12px;display:none;cursor:crosshair;"></canvas>
+                        </div>
+                        <p id="drawModeHint" class="hidden text-xs text-orange-500 font-medium mt-2 text-center">✏️ Draw mode active — click and drag on the image to mark a missed item</p>
                     </div>
 
                     <!-- Detection Cards -->
-                    <div id="detectionsContainer" class="space-y-3"></div>
+                    <div>
+                        <h3 class="font-semibold text-lg mb-3" style="color: #334155;">Suspicious Items Found</h3>
+                        <div id="detectionsContainer" class="space-y-3"></div>
+                    </div>
+
+                    <!-- Scan-Level Feedback (always visible after scan) -->
+                    <div id="scanFeedbackCard" class="customs-card p-4">
+                        <h4 class="font-semibold mb-1" style="color: #334155;">📋 Was this scan result accurate?</h4>
+                        <p class="text-xs text-slate-500 mb-3">Your feedback helps improve detection quality over time.</p>
+                        <div class="flex gap-3" id="scanFeedbackBtns">
+                            <button id="fbOverallCorrect" onclick="recordScanFeedback(true)" class="flex-1 py-2 rounded-lg text-sm font-semibold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors">✓ Yes, accurate</button>
+                            <button id="fbOverallWrong" onclick="recordScanFeedback(false)" class="flex-1 py-2 rounded-lg text-sm font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors">✗ No, missed items</button>
+                        </div>
+                        <p id="scanFeedbackDone" class="hidden text-sm text-green-600 font-semibold text-center mt-1">✓ Feedback recorded — thank you!</p>
+                    </div>
 
                     <!-- Raw Output -->
                     <div id="rawOutputPanel" class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 hidden">
-                        <h4 class="font-semibold mb-3">Raw Output</h4>
+                        <h4 class="font-semibold mb-3">System Diagnostics</h4>
                         <pre id="rawOutputContent" class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-800 font-medium overflow-auto max-h-80"></pre>
                     </div>
-
-                    <!-- Officer Action Panel -->
-                    <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4">
-                        <h4 class="font-semibold mb-3">Officer Action</h4>
-                        <div class="mb-3">
-                            <label class="block text-sm text-slate-600 mb-1">Officer Name</label>
-                            <input type="text" id="actionOfficerInput" class="w-full bg-slate-50 border border-slate-200 border border-slate-300 rounded-lg px-3 py-2 text-slate-800">
+                    <!-- Manual Annotation Label Popup -->
+                    <div id="annotationPopup" class="hidden customs-card p-4" style="border:2px solid #f97316;">
+                        <h4 class="font-semibold mb-1" style="color:#ea580c;">✏️ What did you highlight?</h4>
+                        <p class="text-xs text-slate-500 mb-3">Name the suspicious object you drew a box around. This trains the system to detect it in future.</p>
+                        <div class="flex gap-2">
+                            <input type="text" id="annotationLabel" class="customs-input flex-1" placeholder="e.g. Knife, Drug packet, Weapon..." style="border-color:#fed7aa !important">
+                            <button onclick="submitAnnotation()" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg text-sm transition-colors" style="flex-shrink:0">Submit</button>
+                            <button onclick="cancelAnnotation()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-lg text-sm transition-colors" style="flex-shrink:0">Cancel</button>
                         </div>
-                        <div class="mb-3">
-                            <label class="block text-sm text-slate-600 mb-1">Notes</label>
-                            <textarea id="actionNotesInput" rows="2" class="w-full bg-slate-50 border border-slate-200 border border-slate-300 rounded-lg px-3 py-2 text-slate-800"></textarea>
-                        </div>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button class="action-btn bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium" data-action="flagged">🚩 Flag</button>
-                            <button class="action-btn bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium" data-action="cleared">✓ Clear</button>
-                            <button class="action-btn bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg font-medium" data-action="escalated">⬆ Escalate</button>
-                        </div>
+                        <p id="annotationSaved" class="hidden text-sm text-green-600 font-semibold mt-2">✓ Annotation saved to Learning page!</p>
                     </div>
 
                     <!-- What-If Panel -->
-                    <details class="bg-white shadow-sm border border-slate-200/60 rounded-xl">
-                        <summary class="p-4 cursor-pointer font-semibold">💬 Ask about this scan</summary>
+                    <details class="customs-card">
+                        <summary class="p-4 cursor-pointer font-semibold" style="color: #3b82f6;">💬 Ask Questions About This Scan</summary>
                         <div class="p-4 pt-0">
                             <div class="flex flex-wrap gap-2 mb-3">
                                 <button class="quick-chip px-3 py-1 bg-slate-50 border border-slate-200 rounded-full text-sm hover:bg-slate-100">What would clear this?</button>
@@ -220,6 +464,9 @@
     </div>
 
     <!-- Scripts -->
+    <script src="js/language.js"></script>
+    <script src="js/help-modal.js"></script>
+    <script src="js/customs-ui.js"></script>
     <script src="js/api.js"></script>
     <script src="js/audit.js"></script>
     <script src="js/feedback.js"></script>
@@ -227,13 +474,17 @@
     <script src="js/confidence.js"></script>
     <script src="js/heatmap.js"></script>
     <script>
+        // Initialize help system for this page
+        HelpModal.init('scan');
+    </script>
+    <script>
         // State
         let currentImage = null;
         let currentImageDataUrl = null;
         let currentAnnotatedImage = null;
         let currentResult = null;
         let currentEntry = null;
-        let currentViewMode = 'original';
+        let currentViewMode = 'annotated';
         const LAST_SCAN_STATE_KEY = 'ciibs_last_scan_state';
 
         function getRawPredictions(result) {
@@ -250,11 +501,12 @@
                 .replace(/'/g, '&#039;');
         }
 
-        function persistLastScanState(result) {
+        function persistLastScanState(result, entry) {
             if (!result || !currentImageDataUrl) return;
             try {
                 sessionStorage.setItem(LAST_SCAN_STATE_KEY, JSON.stringify({
                     result,
+                    entry,
                     imageDataUrl: currentImageDataUrl,
                     savedAt: new Date().toISOString()
                 }));
@@ -276,6 +528,7 @@
                     currentImage = img;
                     currentImageDataUrl = state.imageDataUrl;
                     currentResult = state.result;
+                    currentEntry = state.entry || null; // Restore entry if present
                     loadAnnotatedImage(state.result);
 
                     // Restore preview
@@ -453,8 +706,7 @@
                 currentResult = result;
                 loadAnnotatedImage(result);
 
-                // Persist immediately so UI can recover if browser reloads
-                persistLastScanState(result);
+                // Skip persisting here, wait for entry creation
 
                 // Display logs from response
                 if (result.logs && Array.isArray(result.logs)) {
@@ -490,8 +742,8 @@
                     Shipper.updateShipperProfile(result, shipper, null, route);
                 }
 
-                // Brief delay to show final logs
-                await new Promise(r => setTimeout(r, 1000));
+                // Persist state now that entry is created
+                persistLastScanState(result, currentEntry);
 
                 // Display results
                 displayResults(result);
@@ -576,12 +828,12 @@
             if (usingRawRoboflow) {
                 summaryBar.style.borderColor = '#3b82f6';
                 summaryBar.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-                riskLevelEl.textContent = 'RAW OUTPUT';
+                riskLevelEl.textContent = 'SYSTEM DIAGNOSTICS';
                 riskLevelEl.style.color = '#60a5fa';
                 const rawFile = result.raw_output_file || 'N/A';
                 const annotatedFile = result.annotated_image_file || 'N/A';
-                riskExplanationEl.textContent = `Raw JSON: ${rawFile} | Annotated image: ${annotatedFile}`;
-                recommendedActionEl.textContent = 'Review raw output exactly as returned.';
+                riskExplanationEl.textContent = `System Output: ${rawFile} | Detailed findings: ${annotatedFile}`;
+                recommendedActionEl.textContent = 'Review system diagnostics directly.';
 
                 const highestRaw = rawPredictions.reduce((max, p) => {
                     const confidence = Number(p?.confidence);
@@ -625,7 +877,7 @@
                 if (rawPredictions.length === 0) {
                     const emptyCard = document.createElement('div');
                     emptyCard.className = 'bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 border border-blue-200 text-blue-600 text-sm';
-                    emptyCard.textContent = 'Returned raw output, but no prediction objects were present.';
+                    emptyCard.textContent = 'System diagnostics active, but no findings were present.';
                     container.appendChild(emptyCard);
                 } else {
                     rawPredictions.forEach((prediction, index) => {
@@ -633,7 +885,7 @@
                         card.className = 'bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 border border-blue-200';
                         card.innerHTML = `
                             <div class="flex justify-between items-center mb-2">
-                                <h4 class="font-semibold text-blue-700 font-semibold">Prediction ${index + 1}</h4>
+                                <h4 class="font-semibold text-blue-700 font-semibold">Finding ${index + 1}</h4>
                                 <span class="text-xs text-blue-600">Exact payload</span>
                             </div>
                             <pre class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-800 font-medium overflow-auto">${escapeHtml(JSON.stringify(prediction, null, 2))}</pre>
@@ -737,11 +989,13 @@
         document.querySelectorAll('.view-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.view-btn').forEach(b => {
-                    b.classList.remove('bg-slate-50 border border-slate-200', 'text-slate-800');
+                    b.classList.remove('customs-btn-primary', 'bg-slate-50', 'border', 'border-slate-200', 'text-slate-800');
                     b.classList.add('bg-slate-100', 'text-slate-600');
+                    b.style.background = '#f1f5f9';
                 });
                 e.target.classList.remove('bg-slate-100', 'text-slate-600');
-                e.target.classList.add('bg-slate-50 border border-slate-200', 'text-slate-800');
+                e.target.classList.add('customs-btn-primary');
+                e.target.style.background = '';
 
                 currentViewMode = e.target.dataset.mode;
                 updateCanvasView();
@@ -753,7 +1007,7 @@
             btn.addEventListener('click', (e) => {
                 if (!currentEntry) return;
 
-                const action = e.target.dataset.action;
+                const action = e.currentTarget.dataset.action;
                 const officerName = document.getElementById('actionOfficerInput').value;
                 const notes = document.getElementById('actionNotesInput').value;
 
@@ -824,8 +1078,210 @@
             }
         });
 
+        // ===== MANUAL BOUNDING BOX ANNOTATION =====
+        let drawMode = false;
+        let isDrawing = false;
+        let drawStart = { x: 0, y: 0 };
+        let drawEnd = { x: 0, y: 0 };
+        let pendingBox = null;
+        let savedAnnotations = []; // {x,y,w,h in %, label}
+
+        function toggleDrawMode() {
+            drawMode = !drawMode;
+            const dc = document.getElementById('drawCanvas');
+            const rc = document.getElementById('resultCanvas');
+            const btn = document.getElementById('drawBoxBtn');
+            const hint = document.getElementById('drawModeHint');
+
+            if (drawMode) {
+                // Match canvas pixel buffer to rendered CSS size
+                dc.width = rc.clientWidth;
+                dc.height = rc.clientHeight;
+                dc.style.width = rc.clientWidth + 'px';
+                dc.style.height = rc.clientHeight + 'px';
+                dc.style.display = 'block';
+                dc.style.pointerEvents = 'auto';
+                btn.style.background = '#fdba74';
+                btn.style.borderColor = '#ea580c';
+                btn.style.color = '#9a3412';
+                hint.classList.remove('hidden');
+                document.getElementById('annotationPopup').classList.add('hidden');
+            } else {
+                clearDrawCanvas();
+                dc.style.display = 'none';
+                btn.style.background = '';
+                btn.style.borderColor = '';
+                btn.style.color = '';
+                hint.classList.add('hidden');
+            }
+        }
+
+        function getCanvasPos(e, canvas) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        function clearDrawCanvas() {
+            const dc = document.getElementById('drawCanvas');
+            if (dc) dc.getContext('2d').clearRect(0, 0, dc.width, dc.height);
+        }
+
+        function renderDrawCanvas() {
+            const dc = document.getElementById('drawCanvas');
+            const ctx = dc.getContext('2d');
+            ctx.clearRect(0, 0, dc.width, dc.height);
+
+            // Draw saved annotations
+            savedAnnotations.forEach(a => {
+                const x = a.xPct * dc.width;
+                const y = a.yPct * dc.height;
+                const w = a.wPct * dc.width;
+                const h = a.hPct * dc.height;
+                ctx.strokeStyle = '#f97316';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([]);
+                ctx.strokeRect(x, y, w, h);
+                ctx.fillStyle = 'rgba(249,115,22,0.12)';
+                ctx.fillRect(x, y, w, h);
+                ctx.fillStyle = '#f97316';
+                ctx.font = 'bold 13px Inter, sans-serif';
+                ctx.fillText(a.label, x + 4, y - 5 > 0 ? y - 5 : y + 15);
+            });
+
+            // Draw current in-progress box
+            if (isDrawing) {
+                const x = Math.min(drawStart.x, drawEnd.x);
+                const y = Math.min(drawStart.y, drawEnd.y);
+                const w = Math.abs(drawEnd.x - drawStart.x);
+                const h = Math.abs(drawEnd.y - drawStart.y);
+                ctx.strokeStyle = '#f97316';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 4]);
+                ctx.strokeRect(x, y, w, h);
+                ctx.fillStyle = 'rgba(249,115,22,0.08)';
+                ctx.fillRect(x, y, w, h);
+            }
+        }
+
+        // Attach draw events (script runs at end of body, DOM is ready)
+        (function attachDrawEvents() {
+            const dc = document.getElementById('drawCanvas');
+            dc.addEventListener('mousedown', e => {
+                if (!drawMode) return;
+                isDrawing = true;
+                drawStart = getCanvasPos(e, dc);
+                drawEnd = { ...drawStart };
+            });
+            dc.addEventListener('mousemove', e => {
+                if (!drawMode || !isDrawing) return;
+                drawEnd = getCanvasPos(e, dc);
+                renderDrawCanvas();
+            });
+            dc.addEventListener('mouseup', e => {
+                if (!drawMode || !isDrawing) return;
+                isDrawing = false;
+                drawEnd = getCanvasPos(e, dc);
+                const w = Math.abs(drawEnd.x - drawStart.x);
+                const h = Math.abs(drawEnd.y - drawStart.y);
+                if (w < 10 || h < 10) { clearDrawCanvas(); return; } // too small
+                pendingBox = {
+                    xPct: Math.min(drawStart.x, drawEnd.x) / dc.width,
+                    yPct: Math.min(drawStart.y, drawEnd.y) / dc.height,
+                    wPct: w / dc.width,
+                    hPct: h / dc.height
+                };
+                renderDrawCanvas();
+                // Show label popup
+                const popup = document.getElementById('annotationPopup');
+                popup.classList.remove('hidden');
+                document.getElementById('annotationLabel').value = '';
+                document.getElementById('annotationSaved').classList.add('hidden');
+                document.getElementById('annotationLabel').focus();
+                // Exit draw mode temporarily
+                drawMode = false;
+                document.getElementById('drawCanvas').style.pointerEvents = 'none';
+            });
+        })();
+
+        function submitAnnotation() {
+            const label = document.getElementById('annotationLabel').value.trim();
+            if (!label) { document.getElementById('annotationLabel').focus(); return; }
+
+            // Save box with label
+            if (pendingBox) {
+                savedAnnotations.push({ ...pendingBox, label });
+                pendingBox = null;
+            }
+
+            // Show saved boxes on canvas
+            const dc = document.getElementById('drawCanvas');
+            dc.style.display = 'block';
+            renderDrawCanvas();
+
+            // Save to feedback / learning page
+            Feedback.addFeedback({
+                entryId: currentEntry?.entryId || ('manual-' + Date.now()),
+                scanId: currentEntry?.scanId || ('manual-' + Date.now()),
+                detectionLabel: '✏️ Manual: ' + label,
+                detectionTier: 'manual',
+                isCorrect: false   // officer flagged a missed detection
+            });
+
+            // UI feedback
+            document.getElementById('annotationSaved').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('annotationPopup').classList.add('hidden');
+                document.getElementById('drawCanvas').style.pointerEvents = 'auto';
+            }, 1800);
+
+            showToast('Annotation saved to Learning!', 'success');
+        }
+
+        function cancelAnnotation() {
+            pendingBox = null;
+            document.getElementById('annotationPopup').classList.add('hidden');
+            renderDrawCanvas();
+            document.getElementById('drawCanvas').style.pointerEvents = 'auto';
+        }
+
         // Restore any saved result if page auto-reloaded during/after scan
         restoreLastScanState();
+
+        // Scan-level feedback (works even when no items detected)
+        function recordScanFeedback(isCorrect) {
+            if (!currentResult) return;
+            Feedback.addFeedback({
+                entryId: currentEntry?.entryId || 'scan-' + Date.now(),
+                scanId: currentEntry?.scanId || ('scan-' + Date.now()),
+                detectionLabel: 'Overall Scan',
+                detectionTier: currentResult.overall_risk || 'low',
+                isCorrect: isCorrect
+            });
+            document.getElementById('scanFeedbackBtns').classList.add('hidden');
+            document.getElementById('scanFeedbackDone').classList.remove('hidden');
+            showToast('Feedback recorded!', 'success');
+        }
+
+        // Reset scan feedback card on new scan
+        const origScanBtn = document.getElementById('scanBtn');
+        origScanBtn.addEventListener('click', () => {
+            const done = document.getElementById('scanFeedbackDone');
+            const btns = document.getElementById('scanFeedbackBtns');
+            if (done) done.classList.add('hidden');
+            if (btns) btns.classList.remove('hidden');
+            savedAnnotations = [];
+            pendingBox = null;
+            const dc = document.getElementById('drawCanvas');
+            if (dc) { dc.getContext('2d').clearRect(0, 0, dc.width, dc.height); dc.style.display='none'; }
+            drawMode = false;
+        }, true);
     </script>
 </body>
 </html>

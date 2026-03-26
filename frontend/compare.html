@@ -16,46 +16,53 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         /* Plain Cream White Background */
         body {
-            background-color: #FAF9F6;
+            background-color: #f0f4f8;
         }
     </style>
+    <link rel="stylesheet" href="css/customs-theme.css">
 </head>
-<body class="bg-transparent text-slate-900 min-h-screen">
+<body class="bg-transparent text-slate-900 min-h-screen customs-theme">
     <div class="flex">
         <!-- Sidebar -->
-        <aside class="w-56 bg-white shadow-sm border border-slate-200/60 min-h-screen p-4 flex flex-col fixed">
-            <div class="mb-8">
-                <h1 class="text-xl font-bold text-slate-800">CargoScan AI</h1>
-                <p class="text-xs text-slate-500 mt-1">Customs X-Ray Analysis</p>
+        <aside class="w-56 customs-sidebar min-h-screen p-4 flex flex-col fixed" style="background-color: white; border-right: 1px solid #e2e8f0;">
+            <div class="mb-6">
+                <h1 class="text-lg font-bold">CargoScan AI</h1>
+                <p class="brand-sub text-xs mt-0.5">Customs Intelligence</p>
             </div>
-            <nav class="flex-1 space-y-1">
-                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">📡</span> Scan
+            <nav class="flex-1 space-y-0.5">
+                <a href="index.html" class="customs-nav-link">
+                    <span class="nav-icon">🔍</span> X-Ray Scan
                 </a>
-                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-800">
-                    <span class="mr-3">🔄</span> Compare
+                <a href="compare.html" class="customs-nav-link active">
+                    <span class="nav-icon">⚖️</span> Compare
                 </a>
-                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">📋</span> Audit Trail
+                <a href="audit.html" class="customs-nav-link">
+                    <span class="nav-icon">📋</span> History
                 </a>
-                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">🚢</span> Shippers
+                <a href="shipper.html" class="customs-nav-link">
+                    <span class="nav-icon">🚢</span> Shippers
                 </a>
-                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">📊</span> Feedback
+                <a href="feedback.html" class="customs-nav-link">
+                    <span class="nav-icon">📊</span> Learning
                 </a>
-                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">📄</span> Reports
+                <a href="report.html" class="customs-nav-link">
+                    <span class="nav-icon">📄</span> Reports
                 </a>
             </nav>
-            <div class="pt-4 border-t border-slate-200">
-                <p class="text-xs text-slate-400 text-center">Powered by Gemini 2.5 Flash</p>
-                <p class="text-xs text-slate-400 text-center mt-1">For official use only</p>
+            <div class="pt-3 border-t border-slate-700">
+                <p class="text-xs text-slate-500 text-center">Official Use Only</p>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 ml-56 p-6">
+        <main class="flex-1 ml-56 p-6 relative">
+            <!-- Info Button -->
+            <div class="customs-info-btn-container">
+                <button class="customs-info-btn">i</button>
+                <div class="customs-info-tooltip">
+                    <strong>Purpose:</strong> Compares a current scan with a previous known-good baseline scan to detect unauthorized modifications.
+                </div>
+            </div>
             <h2 class="text-2xl font-bold mb-6">Image Comparison</h2>
 
             <!-- Upload Zones -->
@@ -91,7 +98,7 @@
             <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 mb-6">
                 <div class="flex items-center gap-6">
                     <div>
-                        <label class="block text-sm text-slate-600 mb-1">Sensitivity: <span id="sensitivityValue">25</span></label>
+                        <label class="block text-sm text-slate-600 mb-1">Difference Tolerance: <span id="sensitivityValue">25</span></label>
                         <input type="range" id="sensitivitySlider" min="5" max="80" value="25" class="w-48">
                     </div>
                     <div>
@@ -125,26 +132,26 @@
                 <!-- Stats Cards -->
                 <div class="grid grid-cols-4 gap-4 mb-6">
                     <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 text-center">
-                        <p class="text-slate-500 text-sm">Changed Pixels</p>
+                        <p class="text-slate-500 text-sm">Changed Area</p>
                         <p id="changedPercent" class="text-2xl font-bold">--%</p>
                     </div>
                     <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 text-center">
-                        <p class="text-slate-500 text-sm">Average Delta</p>
+                        <p class="text-slate-500 text-sm">Change Intensity</p>
                         <p id="avgDelta" class="text-2xl font-bold">--</p>
                     </div>
                     <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 text-center">
-                        <p class="text-slate-500 text-sm">Sensitivity</p>
+                        <p class="text-slate-500 text-sm">Difference Tolerance</p>
                         <p id="usedThreshold" class="text-2xl font-bold">--</p>
                     </div>
                     <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 text-center">
-                        <p class="text-slate-500 text-sm">Pixel Risk Level</p>
+                        <p class="text-slate-500 text-sm">Threat Level</p>
                         <p id="pixelRisk" class="text-2xl font-bold">--</p>
                     </div>
                 </div>
 
                 <!-- Gemini Semantic Analysis -->
                 <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 mb-6">
-                    <h4 class="font-semibold mb-3">AI Semantic Analysis</h4>
+                    <h4 class="font-semibold mb-3">AI Contextual Review</h4>
                     <div id="geminiLoading" class="text-slate-500">
                         <span class="spinner inline-block w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full mr-2"></span>
                         Analyzing with Gemini...

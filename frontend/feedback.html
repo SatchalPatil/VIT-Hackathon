@@ -7,47 +7,54 @@
     <style>
         /* Plain Cream White Background */
         body {
-            background-color: #FAF9F6;
+            background-color: #f0f4f8;
         }
     </style>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/customs-theme.css">
 </head>
-<body class="bg-transparent text-slate-900 min-h-screen">
+<body class="bg-transparent text-slate-900 min-h-screen customs-theme">
     <div class="flex">
         <!-- Sidebar -->
-        <aside class="w-56 bg-white shadow-sm border border-slate-200/60 min-h-screen p-4 flex flex-col fixed">
-            <div class="mb-8">
-                <h1 class="text-xl font-bold text-slate-800">CargoScan AI</h1>
-                <p class="text-xs text-slate-500 mt-1">Customs X-Ray Analysis</p>
+        <aside class="w-56 customs-sidebar min-h-screen p-4 flex flex-col fixed" style="background-color: white; border-right: 1px solid #e2e8f0;">
+            <div class="mb-6">
+                <h1 class="text-lg font-bold">CargoScan AI</h1>
+                <p class="brand-sub text-xs mt-0.5">Customs Intelligence</p>
             </div>
-            <nav class="flex-1 space-y-1">
-                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">📡</span> Scan
+            <nav class="flex-1 space-y-0.5">
+                <a href="index.html" class="customs-nav-link">
+                    <span class="nav-icon">🔍</span> X-Ray Scan
                 </a>
-                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">🔄</span> Compare
+                <a href="compare.html" class="customs-nav-link">
+                    <span class="nav-icon">⚖️</span> Compare
                 </a>
-                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">📋</span> Audit Trail
+                <a href="audit.html" class="customs-nav-link">
+                    <span class="nav-icon">📋</span> History
                 </a>
-                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">🚢</span> Shippers
+                <a href="shipper.html" class="customs-nav-link">
+                    <span class="nav-icon">🚢</span> Shippers
                 </a>
-                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-800">
-                    <span class="mr-3">📊</span> Feedback
+                <a href="feedback.html" class="customs-nav-link active">
+                    <span class="nav-icon">📊</span> Learning
                 </a>
-                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-50 border border-slate-200 hover:text-slate-800">
-                    <span class="mr-3">📄</span> Reports
+                <a href="report.html" class="customs-nav-link">
+                    <span class="nav-icon">📄</span> Reports
                 </a>
             </nav>
-            <div class="pt-4 border-t border-slate-200">
-                <p class="text-xs text-slate-400 text-center">Powered by Gemini 2.5 Flash</p>
-                <p class="text-xs text-slate-400 text-center mt-1">For official use only</p>
+            <div class="pt-3 border-t border-slate-700">
+                <p class="text-xs text-slate-500 text-center">Official Use Only</p>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 ml-56 p-6">
+        <main class="flex-1 ml-56 p-6 relative">
+            <!-- Info Button -->
+            <div class="customs-info-btn-container">
+                <button class="customs-info-btn">i</button>
+                <div class="customs-info-tooltip">
+                    <strong>Purpose:</strong> Allows the system to learn from officer expertise. Your corrections directly improve future detection accuracy.
+                </div>
+            </div>
             <h2 class="text-2xl font-bold mb-6">Analyst Feedback & Self-Learning</h2>
 
             <!-- Stats Row -->
@@ -65,7 +72,7 @@
                     <p id="statFalse" class="text-2xl font-bold text-red-500">0</p>
                 </div>
                 <div class="bg-white shadow-sm border border-slate-200/60 rounded-xl p-4 text-center">
-                    <p class="text-slate-500 text-sm">Overall Accuracy</p>
+                    <p class="text-slate-500 text-sm">System Accuracy</p>
                     <p id="statAccuracy" class="text-2xl font-bold text-blue-700 font-semibold">--%</p>
                 </div>
             </div>
@@ -196,19 +203,24 @@
                 document.getElementById('noFeedback').classList.add('hidden');
                 logContainer.innerHTML = [...feedback].reverse().map(f => {
                     const tier = Confidence.getTierFromRisk(f.detectionTier?.toLowerCase() || 'moderate');
+                    const dt = new Date(f.timestamp);
+                    const dateStr = dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                    const timeStr = dt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
                     return `
                         <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
                             <div class="flex items-center gap-3">
-                                <span class="text-xs text-slate-500">${getRelativeTime(f.timestamp)}</span>
-                                <span class="text-sm">${f.detectionLabel}</span>
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-semibold text-slate-700">${dateStr}</span>
+                                    <span class="text-xs text-slate-400">${timeStr} · ${getRelativeTime(f.timestamp)}</span>
+                                </div>
+                                <span class="text-sm font-medium">${f.detectionLabel}</span>
                                 <span class="px-1 rounded text-xs" style="background: ${tier.bgColor}; color: ${tier.color}">${f.detectionTier}</span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <span class="px-2 py-0.5 rounded text-xs ${f.isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                <span class="px-2 py-0.5 rounded text-xs font-semibold ${f.isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
                                     ${f.isCorrect ? '✓ Correct' : '✗ False Positive'}
                                 </span>
-                                <span class="text-xs text-slate-500 font-mono">${f.scanId}</span>
                             </div>
                         </div>
                     `;
