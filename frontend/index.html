@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CargoScan AI - Scan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast.success { background: #22c55e; }
+        .toast.error { background: #ef4444; }
+        .gauge-fill { transition: stroke-dashoffset 0.5s ease; }
+        .upload-zone { transition: all 0.2s ease; }
+        .upload-zone.dragover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        .spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="w-56 bg-gray-900 min-h-screen p-4 flex flex-col fixed">
+            <div class="mb-8">
+                <h1 class="text-xl font-bold text-white">CargoScan AI</h1>
+                <p class="text-xs text-gray-500 mt-1">Customs X-Ray Analysis</p>
+            </div>
+            <nav class="flex-1 space-y-1">
+                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg bg-gray-800 text-white">
+                    <span class="mr-3">📡</span> Scan
+                </a>
+                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">🔄</span> Compare
+                </a>
+                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">📋</span> Audit Trail
+                </a>
+                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">🚢</span> Shippers
+                </a>
+                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">📊</span> Feedback
+                </a>
+                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">📄</span> Reports
+                </a>
+            </nav>
+            <div class="pt-4 border-t border-gray-800">
+                <p class="text-xs text-gray-600 text-center">Powered by Gemini 2.5 Flash</p>
+                <p class="text-xs text-gray-600 text-center mt-1">For official use only</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-56 p-6">
+            <div class="grid grid-cols-2 gap-6">
+                <!-- Left Column - Inputs -->
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold">Cargo X-Ray Scan</h2>
+
+                    <!-- Upload Zone -->
+                    <div id="uploadZone" class="upload-zone border-2 border-dashed border-gray-700 rounded-xl p-8 text-center cursor-pointer hover:border-gray-600">
+                        <input type="file" id="imageInput" accept="image/*" class="hidden">
+                        <div id="uploadPlaceholder">
+                            <div class="text-4xl mb-3">📤</div>
+                            <p class="text-gray-400">Drag & drop X-ray image or click to browse</p>
+                            <p class="text-gray-600 text-sm mt-2">Supports JPEG, PNG, WebP</p>
+                        </div>
+                        <div id="previewContainer" class="hidden">
+                            <canvas id="previewCanvas" class="max-w-full mx-auto rounded-lg"></canvas>
+                            <p id="fileInfo" class="text-gray-500 text-sm mt-2"></p>
+                        </div>
+                        <!-- Loading Overlay -->
+                        <div id="loadingOverlay" class="hidden absolute inset-0 bg-gray-900/80 flex items-center justify-center rounded-xl">
+                            <div class="text-center">
+                                <div class="spinner w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
+                                <p class="text-gray-300 mt-3">Analyzing with Gemini AI...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Inputs -->
+                    <div class="bg-gray-900 rounded-xl p-4 space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Declared Manifest</label>
+                            <textarea id="manifestInput" rows="2" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none" placeholder="What the shipper declares is inside..."></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-1">Shipper Name</label>
+                                <input type="text" id="shipperInput" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none" placeholder="Company name">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-1">Route / Origin</label>
+                                <input type="text" id="routeInput" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none" placeholder="e.g. Mumbai → Delhi">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Officer Name</label>
+                            <input type="text" id="officerInput" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none" placeholder="Your name">
+                        </div>
+                    </div>
+
+                    <!-- Scan Button -->
+                    <button id="scanBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        🔍 Scan Image
+                    </button>
+                </div>
+
+                <!-- Right Column - Results -->
+                <div id="resultsPanel" class="space-y-4 hidden">
+                    <!-- Shipment Summary Bar -->
+                    <div id="summaryBar" class="rounded-xl p-4 border-2">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 id="riskLevel" class="text-2xl font-bold"></h3>
+                                <p id="riskExplanation" class="text-sm text-gray-400 mt-1"></p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Highest Confidence</p>
+                                <p id="highestConfidence" class="text-xl font-bold"></p>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-gray-700">
+                            <p class="text-sm"><span class="text-gray-500">Recommended:</span> <span id="recommendedAction"></span></p>
+                            <p class="text-sm mt-1"><span class="text-gray-500">AI Accuracy:</span> <span id="aiAccuracy">--</span>%</p>
+                        </div>
+                    </div>
+
+                    <!-- Canvas View with Mode Toggles -->
+                    <div class="bg-gray-900 rounded-xl p-4">
+                        <div class="flex gap-2 mb-3">
+                            <button class="view-btn px-3 py-1 rounded-lg text-sm bg-gray-800 text-white" data-mode="original">Original</button>
+                            <button class="view-btn px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-400" data-mode="annotated">Annotated</button>
+                            <button class="view-btn px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-400" data-mode="heatmap">Heatmap</button>
+                        </div>
+                        <canvas id="resultCanvas" class="w-full rounded-lg"></canvas>
+                    </div>
+
+                    <!-- Detection Cards -->
+                    <div id="detectionsContainer" class="space-y-3"></div>
+
+                    <!-- Officer Action Panel -->
+                    <div class="bg-gray-900 rounded-xl p-4">
+                        <h4 class="font-semibold mb-3">Officer Action</h4>
+                        <div class="mb-3">
+                            <label class="block text-sm text-gray-400 mb-1">Officer Name</label>
+                            <input type="text" id="actionOfficerInput" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                        </div>
+                        <div class="mb-3">
+                            <label class="block text-sm text-gray-400 mb-1">Notes</label>
+                            <textarea id="actionNotesInput" rows="2" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"></textarea>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button class="action-btn bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium" data-action="flagged">🚩 Flag</button>
+                            <button class="action-btn bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium" data-action="cleared">✓ Clear</button>
+                            <button class="action-btn bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg font-medium" data-action="escalated">⬆ Escalate</button>
+                        </div>
+                    </div>
+
+                    <!-- What-If Panel -->
+                    <details class="bg-gray-900 rounded-xl">
+                        <summary class="p-4 cursor-pointer font-semibold">💬 Ask about this scan</summary>
+                        <div class="p-4 pt-0">
+                            <div class="flex flex-wrap gap-2 mb-3">
+                                <button class="quick-chip px-3 py-1 bg-gray-800 rounded-full text-sm hover:bg-gray-700">What would clear this?</button>
+                                <button class="quick-chip px-3 py-1 bg-gray-800 rounded-full text-sm hover:bg-gray-700">Where to inspect first?</button>
+                                <button class="quick-chip px-3 py-1 bg-gray-800 rounded-full text-sm hover:bg-gray-700">What contraband type?</button>
+                                <button class="quick-chip px-3 py-1 bg-gray-800 rounded-full text-sm hover:bg-gray-700">Why uncertain?</button>
+                            </div>
+                            <div id="chatThread" class="max-h-48 overflow-y-auto space-y-2 mb-3"></div>
+                            <div class="flex gap-2">
+                                <input type="text" id="questionInput" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white" placeholder="Ask a question...">
+                                <button id="askBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Ask</button>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/audit.js"></script>
+    <script src="js/feedback.js"></script>
+    <script src="js/shipper.js"></script>
+    <script src="js/confidence.js"></script>
+    <script src="js/heatmap.js"></script>
+    <script>
+        // State
+        let currentImage = null;
+        let currentResult = null;
+        let currentEntry = null;
+        let currentViewMode = 'original';
+
+        // DOM Elements
+        const uploadZone = document.getElementById('uploadZone');
+        const imageInput = document.getElementById('imageInput');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const resultCanvas = document.getElementById('resultCanvas');
+        const scanBtn = document.getElementById('scanBtn');
+        const resultsPanel = document.getElementById('resultsPanel');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // File upload handling
+        uploadZone.addEventListener('click', () => imageInput.click());
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showToast('Please select an image file', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    currentImage = img;
+
+                    // Setup preview canvas
+                    const ctx = previewCanvas.getContext('2d');
+                    const maxWidth = 400;
+                    const scale = maxWidth / img.width;
+                    previewCanvas.width = maxWidth;
+                    previewCanvas.height = img.height * scale;
+                    ctx.drawImage(img, 0, 0, previewCanvas.width, previewCanvas.height);
+
+                    // Show preview
+                    document.getElementById('uploadPlaceholder').classList.add('hidden');
+                    document.getElementById('previewContainer').classList.remove('hidden');
+                    document.getElementById('fileInfo').textContent = `${file.name} (${img.width}×${img.height})`;
+
+                    scanBtn.disabled = false;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Scan button
+        scanBtn.addEventListener('click', async () => {
+            if (!currentImage) return;
+
+            const manifest = document.getElementById('manifestInput').value;
+            const shipper = document.getElementById('shipperInput').value;
+            const route = document.getElementById('routeInput').value;
+            const officer = document.getElementById('officerInput').value;
+
+            if (!manifest) {
+                showToast('Please enter a manifest description', 'error');
+                return;
+            }
+
+            // Show loading
+            uploadZone.style.position = 'relative';
+            loadingOverlay.classList.remove('hidden');
+            scanBtn.disabled = true;
+
+            try {
+                // Get image as blob
+                const canvas = document.createElement('canvas');
+                canvas.width = currentImage.width;
+                canvas.height = currentImage.height;
+                canvas.getContext('2d').drawImage(currentImage, 0, 0);
+
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+
+                // Create FormData
+                const formData = new FormData();
+                formData.append('image', blob, 'scan.jpg');
+                formData.append('manifest', manifest);
+                formData.append('shipper', shipper);
+                formData.append('route', route);
+
+                // Call API
+                const result = await API.analyzeImage(formData);
+                currentResult = result;
+
+                // Create thumbnail for audit
+                const thumbCanvas = document.createElement('canvas');
+                thumbCanvas.width = 100;
+                thumbCanvas.height = 75;
+                thumbCanvas.getContext('2d').drawImage(currentImage, 0, 0, 100, 75);
+                const thumbData = thumbCanvas.toDataURL('image/jpeg', 0.7);
+
+                // Create audit entry
+                currentEntry = Audit.createEntry({
+                    type: 'scan',
+                    filename: imageInput.files[0]?.name || 'scan.jpg',
+                    declaredGoods: manifest,
+                    shipperName: shipper,
+                    route: route,
+                    imageThumb: thumbData,
+                    aiDetections: result.detections || [],
+                    aiRisk: result.overall_risk,
+                    aiExplanation: result.risk_explanation,
+                    aiMismatch: result.declared_mismatch,
+                    mismatchDetail: result.mismatch_detail,
+                    officerName: officer,
+                    status: 'pending_review'
+                });
+
+                // Update shipper profile
+                if (shipper) {
+                    Shipper.updateShipperProfile(result, shipper, null, route);
+                }
+
+                // Display results
+                displayResults(result);
+
+            } catch (error) {
+                console.error('Scan error:', error);
+                showToast(error.message || 'Scan failed', 'error');
+            } finally {
+                loadingOverlay.classList.add('hidden');
+                scanBtn.disabled = false;
+            }
+        });
+
+        function displayResults(result) {
+            resultsPanel.classList.remove('hidden');
+
+            // Setup result canvas
+            const ctx = resultCanvas.getContext('2d');
+            resultCanvas.width = 600;
+            resultCanvas.height = (currentImage.height / currentImage.width) * 600;
+            ctx.drawImage(currentImage, 0, 0, resultCanvas.width, resultCanvas.height);
+
+            // Summary bar
+            const tier = Confidence.getTierFromRisk(result.overall_risk);
+            const summaryBar = document.getElementById('summaryBar');
+            summaryBar.style.borderColor = tier.color;
+            summaryBar.style.backgroundColor = tier.bgColor;
+
+            document.getElementById('riskLevel').textContent = tier.label;
+            document.getElementById('riskLevel').style.color = tier.color;
+            document.getElementById('riskExplanation').textContent = result.risk_explanation || '';
+            document.getElementById('recommendedAction').textContent = Confidence.getRecommendedAction(tier);
+
+            // Highest confidence
+            const detections = result.detections || [];
+            const highest = detections.reduce((max, d) => Math.max(max, d.confidence_pct || 0), 0);
+            document.getElementById('highestConfidence').textContent = `${highest}%`;
+            document.getElementById('highestConfidence').style.color = Confidence.getTier(highest).color;
+
+            // AI accuracy
+            document.getElementById('aiAccuracy').textContent = Feedback.calculateAccuracy();
+
+            // Pre-fill officer name
+            document.getElementById('actionOfficerInput').value = document.getElementById('officerInput').value;
+
+            // Detection cards
+            const container = document.getElementById('detectionsContainer');
+            container.innerHTML = '';
+
+            detections.sort((a, b) => (b.confidence_pct || 0) - (a.confidence_pct || 0));
+
+            detections.forEach((det, index) => {
+                const detTier = Confidence.getTier(det.confidence_pct || 0);
+                const card = document.createElement('div');
+                card.className = 'bg-gray-900 rounded-xl p-4';
+                card.style.borderLeft = `4px solid ${detTier.color}`;
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h4 class="font-semibold">${det.label || 'Unknown'}</h4>
+                            <span class="inline-block px-2 py-0.5 bg-gray-800 rounded text-xs text-gray-400">${det.category || 'N/A'}</span>
+                        </div>
+                        <span class="px-2 py-0.5 rounded text-xs" style="background: ${detTier.bgColor}; color: ${detTier.color}">${det.region || ''}</span>
+                    </div>
+                    <div class="flex gap-4">
+                        <div id="gauge-${index}" class="w-24"></div>
+                        <div class="flex-1">
+                            <div class="bg-gray-800 rounded-lg p-3 mb-2">
+                                <p class="text-sm text-gray-400">Why flagged:</p>
+                                <p class="text-sm">${det.reason || 'No explanation'}</p>
+                            </div>
+                            <p class="text-xs text-gray-500">${Confidence.getCalibrationNote(det.confidence_pct || 0)}</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-800">
+                        <div class="flex gap-2">
+                            <button class="feedback-btn px-3 py-1 bg-green-900/50 text-green-400 rounded text-sm hover:bg-green-900" data-correct="true" data-index="${index}">✓ Correct</button>
+                            <button class="feedback-btn px-3 py-1 bg-red-900/50 text-red-400 rounded text-sm hover:bg-red-900" data-correct="false" data-index="${index}">✗ False positive</button>
+                        </div>
+                        <button class="px-3 py-1 bg-gray-800 rounded text-sm hover:bg-gray-700">Mark for inspection</button>
+                    </div>
+                `;
+                container.appendChild(card);
+
+                // Render gauge
+                Confidence.renderGauge(document.getElementById(`gauge-${index}`), det.confidence_pct || 0, { animate: true });
+            });
+
+            // Feedback button handlers
+            document.querySelectorAll('.feedback-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    const isCorrect = e.target.dataset.correct === 'true';
+                    const det = detections[index];
+
+                    Feedback.addFeedback({
+                        entryId: currentEntry.entryId,
+                        scanId: currentEntry.scanId,
+                        detectionLabel: det.label,
+                        detectionTier: Confidence.getTier(det.confidence_pct || 0).label,
+                        isCorrect: isCorrect
+                    });
+
+                    e.target.classList.add('opacity-50');
+                    e.target.disabled = true;
+                    showToast('Feedback recorded');
+                });
+            });
+
+            // View mode buttons
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.view-btn').forEach(b => {
+                        b.classList.remove('bg-gray-800', 'text-white');
+                        b.classList.add('bg-gray-700', 'text-gray-400');
+                    });
+                    e.target.classList.remove('bg-gray-700', 'text-gray-400');
+                    e.target.classList.add('bg-gray-800', 'text-white');
+
+                    currentViewMode = e.target.dataset.mode;
+                    updateCanvasView();
+                });
+            });
+        }
+
+        function updateCanvasView() {
+            if (!currentImage || !currentResult) return;
+
+            const detections = currentResult.detections || [];
+
+            switch (currentViewMode) {
+                case 'original':
+                    Heatmap.drawOriginal(resultCanvas, currentImage);
+                    break;
+                case 'annotated':
+                    Heatmap.drawAnnotated(resultCanvas, currentImage, detections);
+                    break;
+                case 'heatmap':
+                    Heatmap.drawHeatmap(resultCanvas, currentImage, detections);
+                    break;
+            }
+        }
+
+        // Officer action buttons
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (!currentEntry) return;
+
+                const action = e.target.dataset.action;
+                const officerName = document.getElementById('actionOfficerInput').value;
+                const notes = document.getElementById('actionNotesInput').value;
+
+                // Update audit entry
+                Audit.updateEntry(currentEntry.entryId, {
+                    officerAction: action,
+                    officerName: officerName,
+                    officerNote: notes,
+                    status: action
+                });
+
+                // Update shipper profile
+                if (currentEntry.shipperName) {
+                    Shipper.updateShipperProfile(currentResult, currentEntry.shipperName, action, currentEntry.route);
+                }
+
+                showToast(`Scan ${action}`);
+
+                // Disable buttons
+                document.querySelectorAll('.action-btn').forEach(b => {
+                    b.disabled = true;
+                    b.classList.add('opacity-50');
+                });
+            });
+        });
+
+        // What-If quick chips
+        document.querySelectorAll('.quick-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.getElementById('questionInput').value = chip.textContent;
+                document.getElementById('askBtn').click();
+            });
+        });
+
+        // What-If ask button
+        document.getElementById('askBtn').addEventListener('click', async () => {
+            const question = document.getElementById('questionInput').value.trim();
+            if (!question || !currentResult) return;
+
+            const chatThread = document.getElementById('chatThread');
+
+            // Add user message
+            const userBubble = document.createElement('div');
+            userBubble.className = 'flex justify-end';
+            userBubble.innerHTML = `<div class="bg-blue-600 text-white px-3 py-2 rounded-lg max-w-[80%]">${question}</div>`;
+            chatThread.appendChild(userBubble);
+
+            document.getElementById('questionInput').value = '';
+
+            try {
+                const response = await API.whatifQuery(currentResult, question);
+
+                // Add AI response
+                const aiBubble = document.createElement('div');
+                aiBubble.className = 'flex justify-start';
+
+                let answer = response.answer || 'Unable to process question';
+                // Highlight risk words
+                answer = answer.replace(/\b(HIGH|CRITICAL|danger|weapon|illegal)\b/gi, '<span class="text-red-400 font-semibold">$1</span>');
+                answer = answer.replace(/\b(clear|safe|normal|low risk)\b/gi, '<span class="text-green-400 font-semibold">$1</span>');
+
+                aiBubble.innerHTML = `<div class="bg-gray-800 text-gray-200 px-3 py-2 rounded-lg max-w-[80%]">${answer}</div>`;
+                chatThread.appendChild(aiBubble);
+
+                chatThread.scrollTop = chatThread.scrollHeight;
+            } catch (error) {
+                showToast('Failed to get response', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

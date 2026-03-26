@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CargoScan AI - Audit Trail</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; border-radius: 8px; color: white; font-weight: 500; z-index: 1000; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast.success { background: #22c55e; }
+        .toast.error { background: #ef4444; }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="w-56 bg-gray-900 min-h-screen p-4 flex flex-col fixed">
+            <div class="mb-8">
+                <h1 class="text-xl font-bold text-white">CargoScan AI</h1>
+                <p class="text-xs text-gray-500 mt-1">Customs X-Ray Analysis</p>
+            </div>
+            <nav class="flex-1 space-y-1">
+                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">📡</span> Scan
+                </a>
+                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">🔄</span> Compare
+                </a>
+                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg bg-gray-800 text-white">
+                    <span class="mr-3">📋</span> Audit Trail
+                </a>
+                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">🚢</span> Shippers
+                </a>
+                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">📊</span> Feedback
+                </a>
+                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">📄</span> Reports
+                </a>
+            </nav>
+            <div class="pt-4 border-t border-gray-800">
+                <p class="text-xs text-gray-600 text-center">Powered by Gemini 2.5 Flash</p>
+                <p class="text-xs text-gray-600 text-center mt-1">For official use only</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-56 p-6">
+            <h2 class="text-2xl font-bold mb-6">Audit Trail</h2>
+
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-5 gap-4 mb-6">
+                <div class="bg-gray-900 rounded-xl p-4 text-center">
+                    <p class="text-gray-500 text-sm">Total Scans</p>
+                    <p id="statTotal" class="text-2xl font-bold">0</p>
+                </div>
+                <div class="bg-gray-900 rounded-xl p-4 text-center">
+                    <p class="text-gray-500 text-sm">Pending</p>
+                    <p id="statPending" class="text-2xl font-bold text-yellow-500">0</p>
+                </div>
+                <div class="bg-gray-900 rounded-xl p-4 text-center">
+                    <p class="text-gray-500 text-sm">Flagged</p>
+                    <p id="statFlagged" class="text-2xl font-bold text-red-500">0</p>
+                </div>
+                <div class="bg-gray-900 rounded-xl p-4 text-center">
+                    <p class="text-gray-500 text-sm">Cleared</p>
+                    <p id="statCleared" class="text-2xl font-bold text-green-500">0</p>
+                </div>
+                <div class="bg-gray-900 rounded-xl p-4 text-center">
+                    <p class="text-gray-500 text-sm">AI Accuracy</p>
+                    <p id="statAccuracy" class="text-2xl font-bold text-blue-500">--%</p>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex items-center gap-4 mb-6">
+                <div class="flex gap-2">
+                    <button class="filter-btn px-3 py-1 rounded-lg text-sm bg-gray-800 text-white" data-filter="all">All</button>
+                    <button class="filter-btn px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-400" data-filter="pending_review">Pending</button>
+                    <button class="filter-btn px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-400" data-filter="flagged">Flagged</button>
+                    <button class="filter-btn px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-400" data-filter="cleared">Cleared</button>
+                    <button class="filter-btn px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-400" data-filter="closed">Closed</button>
+                    <button class="filter-btn px-3 py-1 rounded-lg text-sm bg-gray-700 text-gray-400" data-filter="comparison">Comparisons</button>
+                </div>
+                <input type="text" id="searchInput" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1 text-white placeholder-gray-500 text-sm" placeholder="Search by shipper or scan ID...">
+            </div>
+
+            <!-- Table -->
+            <div class="bg-gray-900 rounded-xl overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-gray-800">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-sm text-gray-400"></th>
+                            <th class="px-4 py-3 text-left text-sm text-gray-400">Scan ID</th>
+                            <th class="px-4 py-3 text-left text-sm text-gray-400">Time</th>
+                            <th class="px-4 py-3 text-left text-sm text-gray-400">Declared</th>
+                            <th class="px-4 py-3 text-left text-sm text-gray-400">Shipper</th>
+                            <th class="px-4 py-3 text-left text-sm text-gray-400">AI Risk</th>
+                            <th class="px-4 py-3 text-left text-sm text-gray-400">Action</th>
+                            <th class="px-4 py-3 text-left text-sm text-gray-400">Status</th>
+                            <th class="px-4 py-3 text-left text-sm text-gray-400"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="flex justify-between items-center mt-4">
+                <button id="exportBtn" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm">
+                    📥 Export CSV
+                </button>
+                <button id="clearBtn" class="bg-red-900 hover:bg-red-800 text-red-400 px-4 py-2 rounded-lg text-sm">
+                    🗑 Clear All
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/audit.js"></script>
+    <script src="js/confidence.js"></script>
+    <script>
+        let currentFilter = 'all';
+        let expandedRow = null;
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function getRelativeTime(timestamp) {
+            const now = new Date();
+            const then = new Date(timestamp);
+            const diff = Math.floor((now - then) / 1000);
+
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            return Math.floor(diff / 86400) + 'd ago';
+        }
+
+        function updateStats() {
+            const stats = Audit.getStats();
+            document.getElementById('statTotal').textContent = stats.total;
+            document.getElementById('statPending').textContent = stats.pending;
+            document.getElementById('statFlagged').textContent = stats.flagged;
+            document.getElementById('statCleared').textContent = stats.cleared;
+            document.getElementById('statAccuracy').textContent = stats.accuracy + '%';
+        }
+
+        function renderTable() {
+            const search = document.getElementById('searchInput').value;
+            let entries = Audit.getFilteredEntries({ search });
+
+            if (currentFilter !== 'all') {
+                if (currentFilter === 'comparison') {
+                    entries = entries.filter(e => e.type === 'comparison');
+                } else {
+                    entries = entries.filter(e => e.status === currentFilter || e.officerAction === currentFilter);
+                }
+            }
+
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            entries.forEach(entry => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-t border-gray-800 hover:bg-gray-800/50';
+
+                const riskTier = Confidence.getTierFromRisk(entry.aiRisk);
+                const statusColors = {
+                    pending_review: 'bg-yellow-900 text-yellow-400',
+                    flagged: 'bg-red-900 text-red-400',
+                    cleared: 'bg-green-900 text-green-400',
+                    escalated: 'bg-orange-900 text-orange-400',
+                    closed: 'bg-gray-700 text-gray-400'
+                };
+
+                tr.innerHTML = `
+                    <td class="px-4 py-3">
+                        ${entry.imageThumb ? `<img src="${entry.imageThumb}" class="w-12 h-9 object-cover rounded">` : '<div class="w-12 h-9 bg-gray-700 rounded"></div>'}
+                    </td>
+                    <td class="px-4 py-3 text-sm font-mono">${entry.scanId}</td>
+                    <td class="px-4 py-3 text-sm text-gray-400">${getRelativeTime(entry.timestamp)}</td>
+                    <td class="px-4 py-3 text-sm">${(entry.declaredGoods || '').substring(0, 30)}${entry.declaredGoods?.length > 30 ? '...' : ''}</td>
+                    <td class="px-4 py-3 text-sm">${entry.shipperName || '-'}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2 py-0.5 rounded text-xs" style="background: ${riskTier.bgColor}; color: ${riskTier.color}">${riskTier.label}</span>
+                    </td>
+                    <td class="px-4 py-3 text-sm">${entry.officerAction || '-'}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2 py-0.5 rounded text-xs ${statusColors[entry.status] || statusColors.pending_review}">${entry.status}</span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <button class="expand-btn text-gray-400 hover:text-white" data-id="${entry.entryId}">▼</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                // Expandable detail row
+                const detailTr = document.createElement('tr');
+                detailTr.className = 'hidden bg-gray-800/30';
+                detailTr.id = `detail-${entry.entryId}`;
+                detailTr.innerHTML = `
+                    <td colspan="9" class="px-6 py-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-semibold mb-2">AI Detections</h4>
+                                ${(entry.aiDetections || []).map(d => `
+                                    <div class="flex items-center gap-2 text-sm mb-1">
+                                        <span>${d.label}</span>
+                                        <span class="text-gray-500">${d.confidence_pct}%</span>
+                                        <span class="px-1 rounded text-xs" style="background: ${Confidence.getTier(d.confidence_pct).bgColor}; color: ${Confidence.getTier(d.confidence_pct).color}">${Confidence.getTier(d.confidence_pct).label}</span>
+                                    </div>
+                                `).join('') || '<p class="text-gray-500 text-sm">No detections</p>'}
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2">Officer Notes</h4>
+                                <p class="text-sm text-gray-400">${entry.officerName ? `Officer: ${entry.officerName}` : ''}</p>
+                                <p class="text-sm">${entry.officerNote || 'No notes'}</p>
+                                ${(entry.status === 'flagged' && !entry.physicalOutcome) ? `
+                                    <div class="mt-3 pt-3 border-t border-gray-700">
+                                        <p class="text-sm text-gray-400 mb-2">Physical Inspection Outcome:</p>
+                                        <div class="flex gap-2">
+                                            <button class="outcome-btn px-3 py-1 bg-green-900 text-green-400 rounded text-sm" data-id="${entry.entryId}" data-outcome="confirmed">Confirmed</button>
+                                            <button class="outcome-btn px-3 py-1 bg-red-900 text-red-400 rounded text-sm" data-id="${entry.entryId}" data-outcome="false_positive">False Positive</button>
+                                            <button class="outcome-btn px-3 py-1 bg-yellow-900 text-yellow-400 rounded text-sm" data-id="${entry.entryId}" data-outcome="partial">Partial</button>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                ${entry.physicalOutcome ? `<p class="mt-2 text-sm"><strong>Outcome:</strong> ${entry.physicalOutcome}</p>` : ''}
+                            </div>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(detailTr);
+            });
+
+            // Expand button handlers
+            document.querySelectorAll('.expand-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.dataset.id;
+                    const detail = document.getElementById(`detail-${id}`);
+
+                    if (expandedRow && expandedRow !== detail) {
+                        expandedRow.classList.add('hidden');
+                    }
+
+                    detail.classList.toggle('hidden');
+                    expandedRow = detail.classList.contains('hidden') ? null : detail;
+                    btn.textContent = detail.classList.contains('hidden') ? '▼' : '▲';
+                });
+            });
+
+            // Outcome button handlers
+            document.querySelectorAll('.outcome-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    Audit.updateEntry(btn.dataset.id, {
+                        physicalOutcome: btn.dataset.outcome,
+                        status: 'closed'
+                    });
+                    showToast('Outcome recorded');
+                    updateStats();
+                    renderTable();
+                });
+            });
+        }
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('bg-gray-800', 'text-white');
+                    b.classList.add('bg-gray-700', 'text-gray-400');
+                });
+                btn.classList.remove('bg-gray-700', 'text-gray-400');
+                btn.classList.add('bg-gray-800', 'text-white');
+
+                currentFilter = btn.dataset.filter;
+                renderTable();
+            });
+        });
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', renderTable);
+
+        // Export CSV
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            const csv = Audit.exportToCSV();
+            if (!csv) {
+                showToast('No entries to export', 'error');
+                return;
+            }
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `audit-export-${Date.now()}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('CSV exported');
+        });
+
+        // Clear all
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all audit entries? This cannot be undone.')) {
+                Audit.clearAll();
+                updateStats();
+                renderTable();
+                showToast('All entries cleared');
+            }
+        });
+
+        // Initial render
+        updateStats();
+        renderTable();
+    </script>
+</body>
+</html>

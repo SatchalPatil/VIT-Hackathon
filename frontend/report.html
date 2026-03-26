@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CargoScan AI - Reports</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; border-radius: 8px; color: white; font-weight: 500; z-index: 1000; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast.success { background: #22c55e; }
+        .toast.error { background: #ef4444; }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="w-56 bg-gray-900 min-h-screen p-4 flex flex-col fixed">
+            <div class="mb-8">
+                <h1 class="text-xl font-bold text-white">CargoScan AI</h1>
+                <p class="text-xs text-gray-500 mt-1">Customs X-Ray Analysis</p>
+            </div>
+            <nav class="flex-1 space-y-1">
+                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">📡</span> Scan
+                </a>
+                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">🔄</span> Compare
+                </a>
+                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">📋</span> Audit Trail
+                </a>
+                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">🚢</span> Shippers
+                </a>
+                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">📊</span> Feedback
+                </a>
+                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg bg-gray-800 text-white">
+                    <span class="mr-3">📄</span> Reports
+                </a>
+            </nav>
+            <div class="pt-4 border-t border-gray-800">
+                <p class="text-xs text-gray-600 text-center">Powered by Gemini 2.5 Flash</p>
+                <p class="text-xs text-gray-600 text-center mt-1">For official use only</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-56 p-6">
+            <h2 class="text-2xl font-bold mb-6">Generate PDF Report</h2>
+
+            <div class="grid grid-cols-2 gap-6">
+                <!-- Left Column - Form -->
+                <div class="space-y-4">
+                    <div class="bg-gray-900 rounded-xl p-4">
+                        <h3 class="font-semibold mb-3">Select Scan</h3>
+
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-400 mb-1">Scan Entry</label>
+                            <select id="scanSelect" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                                <option value="">-- Select a scan --</option>
+                            </select>
+                        </div>
+
+                        <button id="useLatestBtn" class="w-full bg-gray-800 hover:bg-gray-700 text-white py-2 rounded-lg text-sm mb-4">
+                            📌 Use Latest Scan
+                        </button>
+
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-400 mb-1">Officer Name</label>
+                            <input type="text" id="officerInput" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-400 mb-1">Additional Notes</label>
+                            <textarea id="notesInput" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"></textarea>
+                        </div>
+
+                        <button id="generateBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl" disabled>
+                            📄 Generate PDF Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column - Preview -->
+                <div class="bg-gray-900 rounded-xl p-4">
+                    <h3 class="font-semibold mb-3">Scan Preview</h3>
+
+                    <div id="previewEmpty" class="text-center py-8 text-gray-500">
+                        Select a scan to preview
+                    </div>
+
+                    <div id="previewContent" class="hidden space-y-3">
+                        <div class="flex gap-4">
+                            <img id="previewThumb" class="w-24 h-18 object-cover rounded bg-gray-800">
+                            <div>
+                                <p id="previewScanId" class="font-mono text-sm"></p>
+                                <p id="previewTimestamp" class="text-xs text-gray-500"></p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                                <span class="text-gray-500">Shipper:</span>
+                                <span id="previewShipper"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">Route:</span>
+                                <span id="previewRoute"></span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="text-gray-500 text-sm">Declared:</span>
+                            <p id="previewDeclared" class="text-sm"></p>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-500 text-sm">AI Risk:</span>
+                            <span id="previewRisk" class="px-2 py-0.5 rounded text-xs"></span>
+                        </div>
+
+                        <div>
+                            <span class="text-gray-500 text-sm">Detections:</span>
+                            <div id="previewDetections" class="mt-1 space-y-1"></div>
+                        </div>
+
+                        <div>
+                            <span class="text-gray-500 text-sm">Officer Action:</span>
+                            <span id="previewAction" class="text-sm"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/audit.js"></script>
+    <script src="js/report.js"></script>
+    <script src="js/confidence.js"></script>
+    <script>
+        let selectedEntry = null;
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function populateSelect() {
+            const entries = Audit.getAllEntries().filter(e => e.type === 'scan');
+            const select = document.getElementById('scanSelect');
+
+            select.innerHTML = '<option value="">-- Select a scan --</option>';
+
+            entries.forEach(entry => {
+                const tier = Confidence.getTierFromRisk(entry.aiRisk);
+                const option = document.createElement('option');
+                option.value = entry.entryId;
+                option.textContent = `${entry.scanId} · ${entry.shipperName || 'Unknown'} · ${tier.label} · ${entry.timestamp.substring(0, 10)}`;
+                select.appendChild(option);
+            });
+        }
+
+        function showPreview(entry) {
+            selectedEntry = entry;
+
+            document.getElementById('previewEmpty').classList.add('hidden');
+            document.getElementById('previewContent').classList.remove('hidden');
+            document.getElementById('generateBtn').disabled = false;
+
+            // Thumbnail
+            const thumb = document.getElementById('previewThumb');
+            if (entry.imageThumb) {
+                thumb.src = entry.imageThumb;
+            } else {
+                thumb.src = '';
+                thumb.classList.add('bg-gray-700');
+            }
+
+            document.getElementById('previewScanId').textContent = entry.scanId;
+            document.getElementById('previewTimestamp').textContent = entry.timestamp;
+            document.getElementById('previewShipper').textContent = entry.shipperName || '-';
+            document.getElementById('previewRoute').textContent = entry.route || '-';
+            document.getElementById('previewDeclared').textContent = entry.declaredGoods || '-';
+
+            // Risk badge
+            const tier = Confidence.getTierFromRisk(entry.aiRisk);
+            const riskEl = document.getElementById('previewRisk');
+            riskEl.textContent = tier.label;
+            riskEl.style.backgroundColor = tier.bgColor;
+            riskEl.style.color = tier.color;
+
+            // Detections
+            const detectionsEl = document.getElementById('previewDetections');
+            const detections = entry.aiDetections || [];
+            if (detections.length === 0) {
+                detectionsEl.innerHTML = '<span class="text-gray-500 text-sm">No detections</span>';
+            } else {
+                detectionsEl.innerHTML = detections.map(d => {
+                    const t = Confidence.getTier(d.confidence_pct || 0);
+                    return `<div class="text-sm">${d.label} <span style="color: ${t.color}">${d.confidence_pct}%</span></div>`;
+                }).join('');
+            }
+
+            document.getElementById('previewAction').textContent = entry.officerAction || 'Pending';
+
+            // Pre-fill officer
+            if (entry.officerName) {
+                document.getElementById('officerInput').value = entry.officerName;
+            }
+        }
+
+        // Event listeners
+        document.getElementById('scanSelect').addEventListener('change', (e) => {
+            if (!e.target.value) {
+                document.getElementById('previewEmpty').classList.remove('hidden');
+                document.getElementById('previewContent').classList.add('hidden');
+                document.getElementById('generateBtn').disabled = true;
+                selectedEntry = null;
+                return;
+            }
+
+            const entry = Audit.getEntry(e.target.value);
+            if (entry) showPreview(entry);
+        });
+
+        document.getElementById('useLatestBtn').addEventListener('click', () => {
+            const entries = Audit.getAllEntries().filter(e => e.type === 'scan');
+            if (entries.length === 0) {
+                showToast('No scans available', 'error');
+                return;
+            }
+
+            const latest = entries[0];
+            document.getElementById('scanSelect').value = latest.entryId;
+            showPreview(latest);
+        });
+
+        document.getElementById('generateBtn').addEventListener('click', () => {
+            if (!selectedEntry) {
+                showToast('Please select a scan first', 'error');
+                return;
+            }
+
+            // Add any overrides
+            const officer = document.getElementById('officerInput').value;
+            const notes = document.getElementById('notesInput').value;
+
+            const reportData = {
+                ...selectedEntry,
+                officerName: officer || selectedEntry.officerName,
+                officerNote: notes || selectedEntry.officerNote
+            };
+
+            try {
+                Report.generatePDFReport(reportData);
+                showToast('PDF generated successfully');
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to generate PDF', 'error');
+            }
+        });
+
+        // Initial population
+        populateSelect();
+    </script>
+</body>
+</html>

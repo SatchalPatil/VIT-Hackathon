@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CargoScan AI - Compare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; border-radius: 8px; color: white; font-weight: 500; z-index: 1000; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast.success { background: #22c55e; }
+        .toast.error { background: #ef4444; }
+        .upload-zone { transition: all 0.2s ease; }
+        .upload-zone.dragover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        .spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="w-56 bg-gray-900 min-h-screen p-4 flex flex-col fixed">
+            <div class="mb-8">
+                <h1 class="text-xl font-bold text-white">CargoScan AI</h1>
+                <p class="text-xs text-gray-500 mt-1">Customs X-Ray Analysis</p>
+            </div>
+            <nav class="flex-1 space-y-1">
+                <a href="index.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">📡</span> Scan
+                </a>
+                <a href="compare.html" class="flex items-center px-3 py-2 rounded-lg bg-gray-800 text-white">
+                    <span class="mr-3">🔄</span> Compare
+                </a>
+                <a href="audit.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">📋</span> Audit Trail
+                </a>
+                <a href="shipper.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">🚢</span> Shippers
+                </a>
+                <a href="feedback.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">📊</span> Feedback
+                </a>
+                <a href="report.html" class="flex items-center px-3 py-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <span class="mr-3">📄</span> Reports
+                </a>
+            </nav>
+            <div class="pt-4 border-t border-gray-800">
+                <p class="text-xs text-gray-600 text-center">Powered by Gemini 2.5 Flash</p>
+                <p class="text-xs text-gray-600 text-center mt-1">For official use only</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-56 p-6">
+            <h2 class="text-2xl font-bold mb-6">Image Comparison</h2>
+
+            <!-- Upload Zones -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <!-- Reference Image -->
+                <div>
+                    <h3 class="font-semibold text-blue-400 mb-2">Reference Scan (Known-Good Baseline)</h3>
+                    <div id="uploadZone1" class="upload-zone border-2 border-dashed border-blue-700 rounded-xl p-6 text-center cursor-pointer hover:border-blue-500" data-canvas="canvas1">
+                        <input type="file" id="imageInput1" accept="image/*" class="hidden">
+                        <div class="placeholder">
+                            <div class="text-3xl mb-2">📤</div>
+                            <p class="text-gray-400 text-sm">Drop reference scan here</p>
+                        </div>
+                        <canvas id="canvas1" class="hidden max-w-full mx-auto rounded-lg"></canvas>
+                    </div>
+                </div>
+
+                <!-- Current Image -->
+                <div>
+                    <h3 class="font-semibold text-orange-400 mb-2">Current Scan (Today's Shipment)</h3>
+                    <div id="uploadZone2" class="upload-zone border-2 border-dashed border-orange-700 rounded-xl p-6 text-center cursor-pointer hover:border-orange-500" data-canvas="canvas2">
+                        <input type="file" id="imageInput2" accept="image/*" class="hidden">
+                        <div class="placeholder">
+                            <div class="text-3xl mb-2">📤</div>
+                            <p class="text-gray-400 text-sm">Drop current scan here</p>
+                        </div>
+                        <canvas id="canvas2" class="hidden max-w-full mx-auto rounded-lg"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="bg-gray-900 rounded-xl p-4 mb-6">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Sensitivity: <span id="sensitivityValue">25</span></label>
+                        <input type="range" id="sensitivitySlider" min="5" max="80" value="25" class="w-48">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Overlay Opacity: <span id="opacityValue">80</span>%</label>
+                        <input type="range" id="opacitySlider" min="0" max="100" value="80" class="w-48">
+                    </div>
+                    <button id="compareBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        🔄 Run Comparison
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="resultsPanel" class="hidden">
+                <!-- Three Panel View -->
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="bg-gray-900 rounded-xl p-3">
+                        <h4 class="text-sm text-gray-400 mb-2">Reference</h4>
+                        <canvas id="resultCanvas1" class="w-full rounded-lg"></canvas>
+                    </div>
+                    <div class="bg-gray-900 rounded-xl p-3">
+                        <h4 class="text-sm text-gray-400 mb-2">Current</h4>
+                        <canvas id="resultCanvas2" class="w-full rounded-lg"></canvas>
+                    </div>
+                    <div class="bg-gray-900 rounded-xl p-3">
+                        <h4 class="text-sm text-gray-400 mb-2">Difference Map</h4>
+                        <canvas id="diffCanvas" class="w-full rounded-lg"></canvas>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="bg-gray-900 rounded-xl p-4 text-center">
+                        <p class="text-gray-500 text-sm">Changed Pixels</p>
+                        <p id="changedPercent" class="text-2xl font-bold">--%</p>
+                    </div>
+                    <div class="bg-gray-900 rounded-xl p-4 text-center">
+                        <p class="text-gray-500 text-sm">Average Delta</p>
+                        <p id="avgDelta" class="text-2xl font-bold">--</p>
+                    </div>
+                    <div class="bg-gray-900 rounded-xl p-4 text-center">
+                        <p class="text-gray-500 text-sm">Sensitivity</p>
+                        <p id="usedThreshold" class="text-2xl font-bold">--</p>
+                    </div>
+                    <div class="bg-gray-900 rounded-xl p-4 text-center">
+                        <p class="text-gray-500 text-sm">Pixel Risk Level</p>
+                        <p id="pixelRisk" class="text-2xl font-bold">--</p>
+                    </div>
+                </div>
+
+                <!-- Gemini Semantic Analysis -->
+                <div class="bg-gray-900 rounded-xl p-4 mb-6">
+                    <h4 class="font-semibold mb-3">AI Semantic Analysis</h4>
+                    <div id="geminiLoading" class="text-gray-500">
+                        <span class="spinner inline-block w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full mr-2"></span>
+                        Analyzing with Gemini...
+                    </div>
+                    <div id="geminiResults" class="hidden">
+                        <div class="flex items-center gap-3 mb-3">
+                            <span id="geminiSeverity" class="px-3 py-1 rounded font-bold">--</span>
+                            <p id="geminiSummary" class="text-gray-300"></p>
+                        </div>
+                        <p class="text-sm text-gray-400 mb-3"><strong>Recommendation:</strong> <span id="geminiRecommendation"></span></p>
+                        <div id="differencesContainer" class="space-y-2"></div>
+                    </div>
+                </div>
+
+                <!-- Officer Action -->
+                <div class="bg-gray-900 rounded-xl p-4">
+                    <h4 class="font-semibold mb-3">Officer Action</h4>
+                    <div class="grid grid-cols-2 gap-4 mb-3">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Officer Name</label>
+                            <input type="text" id="officerInput" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Notes</label>
+                            <input type="text" id="notesInput" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="action-btn bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium" data-action="flagged">🚩 Flag</button>
+                        <button class="action-btn bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium" data-action="cleared">✓ Clear</button>
+                        <button class="action-btn bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg font-medium" data-action="escalated">⬆ Escalate</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/audit.js"></script>
+    <script src="js/compare.js"></script>
+    <script>
+        let image1 = null, image2 = null;
+        let currentEntry = null;
+        let geminiResult = null;
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Setup upload zones
+        ['1', '2'].forEach(num => {
+            const zone = document.getElementById(`uploadZone${num}`);
+            const input = document.getElementById(`imageInput${num}`);
+            const canvas = document.getElementById(`canvas${num}`);
+
+            zone.addEventListener('click', () => input.click());
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0], num);
+            });
+            input.addEventListener('change', e => {
+                if (e.target.files.length) handleFile(e.target.files[0], num);
+            });
+        });
+
+        function handleFile(file, num) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    if (num === '1') image1 = img;
+                    else image2 = img;
+
+                    const canvas = document.getElementById(`canvas${num}`);
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 300;
+                    canvas.height = (img.height / img.width) * 300;
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    canvas.classList.remove('hidden');
+                    document.querySelector(`#uploadZone${num} .placeholder`).classList.add('hidden');
+
+                    document.getElementById('compareBtn').disabled = !(image1 && image2);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Sliders
+        document.getElementById('sensitivitySlider').addEventListener('input', e => {
+            document.getElementById('sensitivityValue').textContent = e.target.value;
+        });
+        document.getElementById('opacitySlider').addEventListener('input', e => {
+            document.getElementById('opacityValue').textContent = e.target.value;
+        });
+
+        // Compare button
+        document.getElementById('compareBtn').addEventListener('click', async () => {
+            if (!image1 || !image2) return;
+
+            const threshold = parseInt(document.getElementById('sensitivitySlider').value);
+            const opacity = parseInt(document.getElementById('opacitySlider').value);
+
+            document.getElementById('resultsPanel').classList.remove('hidden');
+            document.getElementById('geminiLoading').classList.remove('hidden');
+            document.getElementById('geminiResults').classList.add('hidden');
+
+            // Draw result canvases
+            const rc1 = document.getElementById('resultCanvas1');
+            const rc2 = document.getElementById('resultCanvas2');
+
+            [rc1, rc2].forEach((canvas, i) => {
+                const img = i === 0 ? image1 : image2;
+                canvas.width = 300;
+                canvas.height = (img.height / img.width) * 300;
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            });
+
+            // Compute pixel diff
+            const { diffCanvas, stats, quadrantScores } = Compare.computePixelDiff(rc1, rc2, threshold, opacity);
+
+            // Draw diff result
+            const diffCanvasEl = document.getElementById('diffCanvas');
+            diffCanvasEl.width = diffCanvas.width;
+            diffCanvasEl.height = diffCanvas.height;
+            diffCanvasEl.getContext('2d').drawImage(diffCanvas, 0, 0);
+
+            // Update stats
+            document.getElementById('changedPercent').textContent = stats.changedPercent + '%';
+            document.getElementById('avgDelta').textContent = stats.avgDelta;
+            document.getElementById('usedThreshold').textContent = stats.threshold;
+            document.getElementById('pixelRisk').textContent = stats.riskLevel;
+            document.getElementById('pixelRisk').style.color = Compare.getRiskLevelColor(stats.riskLevel);
+
+            // Call Gemini API
+            try {
+                const formData = new FormData();
+                const blob1 = await new Promise(r => {
+                    const c = document.createElement('canvas');
+                    c.width = image1.width; c.height = image1.height;
+                    c.getContext('2d').drawImage(image1, 0, 0);
+                    c.toBlob(r, 'image/jpeg');
+                });
+                const blob2 = await new Promise(r => {
+                    const c = document.createElement('canvas');
+                    c.width = image2.width; c.height = image2.height;
+                    c.getContext('2d').drawImage(image2, 0, 0);
+                    c.toBlob(r, 'image/jpeg');
+                });
+
+                formData.append('image1', blob1, 'reference.jpg');
+                formData.append('image2', blob2, 'current.jpg');
+
+                geminiResult = await API.compareImages(formData);
+                displayGeminiResults(geminiResult);
+
+                // Create audit entry
+                currentEntry = Audit.createEntry({
+                    type: 'comparison',
+                    aiRisk: geminiResult.severity?.toLowerCase() || 'medium',
+                    aiExplanation: geminiResult.summary,
+                    aiDetections: geminiResult.differences || [],
+                    status: 'pending_review'
+                });
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('geminiLoading').innerHTML = '<span class="text-red-400">AI analysis failed</span>';
+            }
+        });
+
+        function displayGeminiResults(result) {
+            document.getElementById('geminiLoading').classList.add('hidden');
+            document.getElementById('geminiResults').classList.remove('hidden');
+
+            const severity = result.severity || 'MEDIUM';
+            const severityEl = document.getElementById('geminiSeverity');
+            severityEl.textContent = severity;
+            severityEl.className = 'px-3 py-1 rounded font-bold ' +
+                (severity === 'HIGH' ? 'bg-red-900 text-red-400' :
+                 severity === 'MEDIUM' ? 'bg-yellow-900 text-yellow-400' : 'bg-green-900 text-green-400');
+
+            document.getElementById('geminiSummary').textContent = result.summary || '';
+            document.getElementById('geminiRecommendation').textContent = result.recommendation || '';
+
+            const container = document.getElementById('differencesContainer');
+            container.innerHTML = '';
+            (result.differences || []).forEach(diff => {
+                const el = document.createElement('div');
+                el.className = 'flex items-center gap-3 bg-gray-800 rounded-lg p-2';
+
+                const dotColor = diff.severity === 'HIGH' ? 'bg-red-500' :
+                                 diff.severity === 'MEDIUM' ? 'bg-yellow-500' : 'bg-green-500';
+
+                el.innerHTML = `
+                    <span class="w-3 h-3 rounded-full ${dotColor}"></span>
+                    <span class="text-gray-400 text-sm">${diff.location}:</span>
+                    <span class="text-sm">${diff.description}</span>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+        // Officer actions
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                if (!currentEntry) return;
+
+                Audit.updateEntry(currentEntry.entryId, {
+                    officerAction: e.target.dataset.action,
+                    officerName: document.getElementById('officerInput').value,
+                    officerNote: document.getElementById('notesInput').value,
+                    status: e.target.dataset.action
+                });
+
+                showToast(`Comparison ${e.target.dataset.action}`);
+                document.querySelectorAll('.action-btn').forEach(b => { b.disabled = true; b.classList.add('opacity-50'); });
+            });
+        });
+    </script>
+</body>
+</html>
